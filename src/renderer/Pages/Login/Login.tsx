@@ -11,16 +11,23 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import React, { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Image from '../../../../assets/login_image.jpeg';
 
 const theme = createTheme();
 
 function Login() {
   const [wrongMessage, setwrongMessage] = useState('');
-  const handleSubmit = useCallback((e: any) => {
-    e.preventDefault();
-    setwrongMessage('Envio de informacion');
-  }, []);
+  const navigate = useNavigate();
+
+  const handleSubmit = useCallback(
+    (e: any) => {
+      e.preventDefault();
+      setwrongMessage('Envio de informacion');
+      navigate('/home');
+    },
+    [navigate]
+  );
 
   return (
     <>
