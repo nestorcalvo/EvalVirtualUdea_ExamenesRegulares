@@ -10,24 +10,57 @@ import {
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import React, { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import instance from 'renderer/axiosConfig';
+import { AxiosError } from 'axios';
 import Image from '../../../../assets/login_image.jpeg';
 
 const theme = createTheme();
 
 function Login() {
-  const [wrongMessage, setwrongMessage] = useState('');
-  const navigate = useNavigate();
+  const userRef = useRef<HTMLInputElement>(null);
+  const errRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = useCallback(
-    (e: any) => {
-      e.preventDefault();
-      setwrongMessage('Envio de informacion');
-      navigate('/home');
-    },
-    [navigate]
-  );
+  const [user, setUser] = useState('');
+  const [pwd, setPwd] = useState('');
+  const [wrongMessage, setWrongMessage] = useState('');
+
+  useEffect(() => {
+    if (userRef.current) {
+      userRef.current.focus();
+    }
+  }, []);
+  useEffect(() => {
+    setWrongMessage('');
+  }, [user, pwd]);
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    try {
+      const config = {
+        headers: { 'Content-Type': 'application/json' },
+        params: { user, password: pwd, cohort: 20232 },
+        // withCredentials: true,
+      };
+      const response = await instance.post('/login', {}, config);
+      const AuthToken = JSON.stringify(response?.data?.token);
+      console.log(AuthToken);
+      setUser('');
+      setPwd('');
+    } catch (err) {
+      const error = err as AxiosError;
+      if (!error?.response) {
+        setWrongMessage('No internet connection');
+      } else if (error.response?.status === 401) {
+        setWrongMessage('Usuario o contrasena incorrectos');
+      } else {
+        setWrongMessage('Login failed');
+      }
+      if (errRef.current) {
+        errRef.current.focus();
+      }
+    }
+  };
 
   return (
     <>
@@ -80,7 +113,10 @@ function Login() {
                   id="user"
                   label="User"
                   name="user"
-                  autoComplete="user"
+                  autoComplete="off"
+                  onChange={(e) => setUser(e.target.value)}
+                  value={user}
+                  inputRef={userRef}
                   autoFocus
                 />
                 <TextField
@@ -91,7 +127,8 @@ function Login() {
                   label="Password"
                   type="password"
                   id="password"
-                  autoComplete="current-password"
+                  onChange={(e) => setPwd(e.target.value)}
+                  value={pwd}
                 />
 
                 <Button
@@ -104,9 +141,13 @@ function Login() {
                 </Button>
               </Box>
 
-              <Typography sx={{ color: 'error.main' }}>
-                {wrongMessage}
-              </Typography>
+              <section>
+                <p ref={errRef}>
+                  <Typography component="span" sx={{ color: 'error.main' }}>
+                    {wrongMessage}
+                  </Typography>
+                </p>
+              </section>
             </Box>
           </Grid>
         </Grid>
