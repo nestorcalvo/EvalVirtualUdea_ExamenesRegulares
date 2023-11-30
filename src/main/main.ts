@@ -133,5 +133,8 @@ app
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
     });
+    if (mainWindow) {
+      mainWindow.webContents.send('open_window', { message: 'App showed' });
+    }
   })
   .catch(console.log);

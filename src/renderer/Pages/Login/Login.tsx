@@ -13,6 +13,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import React, { useState, useRef, useEffect } from 'react';
 import instance from 'renderer/axiosConfig';
 import { AxiosError } from 'axios';
+import { useNavigate } from 'react-router-dom';
 import Image from '../../../../assets/login_image.jpeg';
 
 const theme = createTheme();
@@ -20,7 +21,7 @@ const theme = createTheme();
 function Login() {
   const userRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLInputElement>(null);
-
+  const navigate = useNavigate();
   const [user, setUser] = useState('');
   const [pwd, setPwd] = useState('');
   const [wrongMessage, setWrongMessage] = useState('');
@@ -47,6 +48,7 @@ function Login() {
       console.log(AuthToken);
       setUser('');
       setPwd('');
+      navigate('/home', { state: { token: AuthToken } });
     } catch (err) {
       const error = err as AxiosError;
       if (!error?.response) {
