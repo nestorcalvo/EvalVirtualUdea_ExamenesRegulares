@@ -5,17 +5,16 @@ import icon from '../../../../assets/icon.png';
 function Home() {
   const { state } = useLocation();
   const token = state?.token;
+  console.log(token);
   // SEND PC INFORATION EVENT
   // START ANALYZING SOFTWARE EVENT
-  window.electron.ipcRenderer.once('open_window', (args) => {
-    console.log(args);
-  });
+  window.electron.ipcRenderer.sendMessage('open_window');
   return (
     <div>
       <div className="Hello">
         <img width="200" alt="icon" src={icon} />
       </div>
-      <h1>Eval Virtual Udea</h1>
+      <h1>Eval Virtual UdeA</h1>
     </div>
   );
 }

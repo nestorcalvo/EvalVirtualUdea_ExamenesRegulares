@@ -45,7 +45,6 @@ function Login() {
       };
       const response = await instance.post('/login', {}, config);
       const AuthToken = JSON.stringify(response?.data?.token);
-      console.log(AuthToken);
       setUser('');
       setPwd('');
       navigate('/home', { state: { token: AuthToken } });
