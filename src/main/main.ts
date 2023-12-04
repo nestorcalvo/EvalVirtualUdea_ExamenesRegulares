@@ -52,7 +52,14 @@ const isDebug =
 // if (isDebug) {
 //   require('electron-debug')();
 // }
-
+const checkSoftware = async () => {
+  try {
+    const currentProcesses = await psList();
+    console.log('Current Processes:', currentProcesses[0]);
+  } catch (error) {
+    console.error('Error getting processes:', error);
+  }
+};
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
@@ -97,6 +104,7 @@ const createWindow = async () => {
         mainWindow!.focus();
       });
     }
+    checkSoftware();
   });
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
@@ -132,7 +140,7 @@ const createWindow = async () => {
 /**
  * Add event listeners...
  */
-
+const intervalId = setInterval(checkSoftware, 5000);
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
@@ -140,7 +148,9 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-
+app.on('before-quit', () => {
+  clearInterval(intervalId);
+});
 app
   .whenReady()
   .then(() => {
