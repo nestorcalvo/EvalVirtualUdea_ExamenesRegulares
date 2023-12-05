@@ -12,8 +12,12 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 // import { autoUpdater } from 'electron-updater';
 // import log from 'electron-log';
+import { EventEmitter } from 'node:events';
+import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+
+const warningFound = new EventEmitter();
 
 const psList = require('ps-list');
 
@@ -24,7 +28,15 @@ const psList = require('ps-list');
 //     autoUpdater.checkForUpdatesAndNotify();
 //   }
 // }
-
+interface ProcessType {
+  pid: number;
+  name: string;
+  cmd: string;
+  ppid: number;
+  uid: number;
+  cpu: number;
+  memory: number;
+}
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
@@ -53,12 +65,24 @@ const isDebug =
 //   require('electron-debug')();
 // }
 const checkSoftware = async () => {
+  let procesoFound = {};
   try {
-    const currentProcesses = await psList();
-    console.log('Current Processes:', currentProcesses[0]);
+    const currentProcesses: Array<ProcessType> = await psList();
+    const softwareLower = SOFTWARE.map((e) => e.toLowerCase());
+    procesoFound = currentProcesses.filter((processObject) => {
+      if (softwareLower.includes(processObject.name.toLowerCase())) {
+        return processObject;
+      }
+      return false;
+    });
+
+    warningFound.emit('software', procesoFound);
+    // console.log(procesoFound);
   } catch (error) {
     console.error('Error getting processes:', error);
+    return { err: error };
   }
+  return procesoFound;
 };
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -136,7 +160,11 @@ const createWindow = async () => {
   // eslint-disable-next-line
   // new AppUpdater();
 };
-
+warningFound.on('software', (args: Array<ProcessType>) => {
+  let arrayFound = args.map((e) => e.name);
+  arrayFound = [...new Set(arrayFound)];
+  console.log('Something was found', arrayFound);
+});
 /**
  * Add event listeners...
  */
