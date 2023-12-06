@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, ipcRenderer } from 'electron';
 // import { autoUpdater } from 'electron-updater';
 // import log from 'electron-log';
 import { EventEmitter } from 'node:events';
@@ -38,7 +38,8 @@ interface ProcessType {
   memory: number;
 }
 let mainWindow: BrowserWindow | null = null;
-
+let warnWindow: BrowserWindow | null = null;
+let warningWindowOpen: boolean = false;
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
@@ -51,6 +52,15 @@ ipcMain.on('open_window', async (event) => {
     event.reply('open_window', msgTemplate('open'));
   } else {
     event.reply('open_window', msgTemplate('close'));
+  }
+});
+ipcMain.on('warnWindowStatus', async (_event, arg) => {
+  console.log(arg);
+  if (arg) {
+    console.log('Mensaje recibido');
+    warningWindowOpen = true;
+  } else {
+    warningWindowOpen = false;
   }
 });
 if (process.env.NODE_ENV === 'production') {
@@ -96,7 +106,26 @@ const installExtensions = async () => {
     )
     .catch(console.log);
 };
+const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
+  if (isDebug) {
+    await installExtensions();
+  }
 
+  const RESOURCES_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(RESOURCES_PATH, ...paths);
+  };
+  warnWindow = new BrowserWindow({ parent, show });
+  console.log(resolveHtmlPath('index.html'));
+  console.log(resolveHtmlPath('home'));
+  warnWindow.loadURL(resolveHtmlPath('home'));
+  warnWindow.once('closed', () => {
+    warnWindow = null;
+  });
+};
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
@@ -121,6 +150,7 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+
   mainWindow.webContents.on('did-frame-finish-load', () => {
     if (isDebug) {
       mainWindow!.webContents.openDevTools();
@@ -131,7 +161,7 @@ const createWindow = async () => {
     checkSoftware();
   });
   mainWindow.loadURL(resolveHtmlPath('index.html'));
-
+  // createWarnWindow(mainWindow, true);
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
@@ -160,11 +190,19 @@ const createWindow = async () => {
   // eslint-disable-next-line
   // new AppUpdater();
 };
+
 warningFound.on('software', (args: Array<ProcessType>) => {
   let arrayFound = args.map((e) => e.name);
   arrayFound = [...new Set(arrayFound)];
   console.log('Something was found', arrayFound);
+  if (!warningWindowOpen) {
+    console.log('Apertura');
+    // createWarnWindow(mainWindow!, true);
+
+    // mainWindow!.webContents.send('software', arrayFound);
+  }
 });
+
 /**
  * Add event listeners...
  */

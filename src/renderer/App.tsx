@@ -3,6 +3,7 @@ import './App.css';
 import React from 'react';
 import Home from './Pages/Home/Home';
 import Login from './Pages/Login/Login';
+import WarnPage from './Pages/WarnPage/WarnPage';
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Routes>
           <Route path="/*" element={<Login />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/warning" element={<WarnPage />} />
         </Routes>
       </BrowserRouter>
     </React.StrictMode>
