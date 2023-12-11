@@ -119,9 +119,8 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
     return path.join(RESOURCES_PATH, ...paths);
   };
   warnWindow = new BrowserWindow({ parent, show });
-  console.log(resolveHtmlPath('index.html'));
-  console.log(resolveHtmlPath('home'));
-  warnWindow.loadURL(resolveHtmlPath('home'));
+  warnWindow.loadURL(resolveHtmlPath('warning'));
+  warnWindow.webContents.send('open_window');
   warnWindow.once('closed', () => {
     warnWindow = null;
   });
@@ -161,7 +160,7 @@ const createWindow = async () => {
     checkSoftware();
   });
   mainWindow.loadURL(resolveHtmlPath('index.html'));
-  // createWarnWindow(mainWindow, true);
+  // createWarnWindow(mainWindow, false);
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
@@ -197,7 +196,7 @@ warningFound.on('software', (args: Array<ProcessType>) => {
   console.log('Something was found', arrayFound);
   if (!warningWindowOpen) {
     console.log('Apertura');
-    // createWarnWindow(mainWindow!, true);
+    createWarnWindow(mainWindow!, true);
 
     // mainWindow!.webContents.send('software', arrayFound);
   }

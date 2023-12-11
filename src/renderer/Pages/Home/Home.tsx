@@ -8,12 +8,6 @@ function Home() {
   const { state } = useLocation();
   const token = state?.token;
 
-  // SEND PC INFORATION EVENT
-  // START ANALYZING SOFTWARE EVENT
-  window.electron.ipcRenderer.once('software', (args) => {
-    console.log(args);
-  });
-
   return (
     <div>
       <div className="Hello">
