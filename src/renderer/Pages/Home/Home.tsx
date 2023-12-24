@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/media-has-caption */
-import React, { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import Camera from 'renderer/Components/Camera/Camera';
+import Information from 'renderer/Components/Information/Information';
 import icon from '../../../../assets/icon.png';
 
 function Home() {
@@ -15,6 +15,7 @@ function Home() {
       </div>
       <h1>Eval Virtual UdeA</h1>
       <h1>{token}</h1>
+      <Information />
       <Camera />
     </div>
   );

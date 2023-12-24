@@ -121,8 +121,12 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
   warnWindow = new BrowserWindow({ parent, show });
   warnWindow.loadURL(resolveHtmlPath('warning'));
   warnWindow.webContents.send('open_window');
+  if (isDebug) {
+    warnWindow.setAlwaysOnTop(false, 'pop-up-menu');
+  }
   warnWindow.once('closed', () => {
     warnWindow = null;
+    warningWindowOpen = false;
   });
 };
 const createWindow = async () => {
@@ -197,7 +201,7 @@ warningFound.on('software', (args: Array<ProcessType>) => {
   if (!warningWindowOpen) {
     console.log('Apertura');
     createWarnWindow(mainWindow!, true);
-
+    warningWindowOpen = true;
     // mainWindow!.webContents.send('software', arrayFound);
   }
 });
