@@ -8,7 +8,7 @@ const SOFTWARE = [
   'Remote Desktop',
   'CloudBerry Remote Assistant',
   'chrome',
-  'firefox',
+  // 'firefox',
   'msedge',
   'discord',
   'edge',
