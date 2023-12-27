@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 
 function WarnPage() {
+  const [warning, setWarning] = useState('');
   const [warningType, setWarningType] = useState('');
-  // window.electron.ipcRenderer.on('open_window', (...args) => {
-  //   const warn: String = args[0];
-  //   setWarningType(warn);
-  // });
+  window.electron.ipcRenderer.once('open_window', (args) => {
+    if (Array.isArray(args)) {
+      setWarningType('software');
+      const warn = args!.join(', ');
+      setWarning(warn);
+    }
+  });
+
   return (
     <div>
-      <h1>WarnPage</h1>
+      <h1>ALERTA</h1>
+      {warningType === 'software' && <h1>{warning}</h1>}
     </div>
   );
 }

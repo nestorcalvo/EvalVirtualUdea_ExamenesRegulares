@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
 /**
@@ -9,7 +10,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, ipcRenderer } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
 // import { autoUpdater } from 'electron-updater';
 // import log from 'electron-log';
 import { EventEmitter } from 'node:events';
@@ -40,6 +41,10 @@ interface ProcessType {
 let mainWindow: BrowserWindow | null = null;
 let warnWindow: BrowserWindow | null = null;
 let warningWindowOpen: boolean = false;
+let arrayFound: Iterable<string> | null | undefined;
+let count: number = 0;
+const ITERATIONS: number = 1;
+
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
@@ -54,15 +59,14 @@ ipcMain.on('open_window', async (event) => {
     event.reply('open_window', msgTemplate('close'));
   }
 });
-ipcMain.on('warnWindowStatus', async (_event, arg) => {
-  console.log(arg);
-  if (arg) {
-    console.log('Mensaje recibido');
-    warningWindowOpen = true;
-  } else {
-    warningWindowOpen = false;
-  }
-});
+// ipcMain.on('warnWindowStatus', async (_event, arg) => {
+//   if (arg) {
+//     console.log('Mensaje recibido');
+//     warningWindowOpen = true;
+//   } else {
+//     warningWindowOpen = false;
+//   }
+// });
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -71,9 +75,9 @@ if (process.env.NODE_ENV === 'production') {
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
-// if (isDebug) {
-//   require('electron-debug')();
-// }
+if (isDebug) {
+  require('electron-debug')();
+}
 const checkSoftware = async () => {
   let procesoFound = {};
   try {
@@ -85,9 +89,7 @@ const checkSoftware = async () => {
       }
       return false;
     });
-
     warningFound.emit('software', procesoFound);
-    // console.log(procesoFound);
   } catch (error) {
     console.error('Error getting processes:', error);
     return { err: error };
@@ -118,16 +120,33 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
   };
-  warnWindow = new BrowserWindow({ parent, show });
+  warnWindow = new BrowserWindow({
+    parent,
+    show,
+    icon: getAssetPath('icon.png'),
+    webPreferences: {
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
+    },
+  });
   warnWindow.loadURL(resolveHtmlPath('warning'));
-  warnWindow.webContents.send('open_window');
-  if (isDebug) {
-    warnWindow.setAlwaysOnTop(false, 'pop-up-menu');
-  }
+  // warnWindow.webContents.send('open_window');
+  warnWindow.once('ready-to-show', () => {
+    warnWindow?.webContents.send(
+      'open_window',
+      warningWindowOpen ? arrayFound : false
+    );
+  });
+  isDebug
+    ? warnWindow.setAlwaysOnTop(true, 'pop-up-menu')
+    : warnWindow.setAlwaysOnTop(false, 'pop-up-menu');
+
   warnWindow.once('closed', () => {
     warnWindow = null;
     warningWindowOpen = false;
   });
+  return warnWindow;
 };
 const createWindow = async () => {
   if (isDebug) {
@@ -144,8 +163,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: isDebug ? 1024 : screen.getPrimaryDisplay().workAreaSize.width,
+    height: isDebug ? 728 : screen.getPrimaryDisplay().workAreaSize.height,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -195,14 +214,16 @@ const createWindow = async () => {
 };
 
 warningFound.on('software', (args: Array<ProcessType>) => {
-  let arrayFound = args.map((e) => e.name);
+  arrayFound = args.map((e) => e.name);
   arrayFound = [...new Set(arrayFound)];
-  console.log('Something was found', arrayFound);
-  if (!warningWindowOpen) {
-    console.log('Apertura');
+  console.log('Warning found > software > ', arrayFound);
+  count += 1;
+  // Check if there is two alerts of software
+  if (!warningWindowOpen && count === ITERATIONS) {
+    console.log('Warnwindow > open');
     createWarnWindow(mainWindow!, true);
     warningWindowOpen = true;
-    // mainWindow!.webContents.send('software', arrayFound);
+    count = 0;
   }
 });
 
