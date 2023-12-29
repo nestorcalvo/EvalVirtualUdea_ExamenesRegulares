@@ -4,6 +4,8 @@ function WarnPage() {
   const [warning, setWarning] = useState('');
   const [warningType, setWarningType] = useState('');
   const [timer, setTimer] = useState(10);
+  const intervalRef: any = useRef();
+
   useEffect(() => {
     window.electron.ipcRenderer.once('open_window', (args) => {
       if (Array.isArray(args)) {
@@ -13,7 +15,6 @@ function WarnPage() {
       }
     });
   }, []);
-  const intervalRef: any = useRef(); // Add a ref to store the interval id
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -22,7 +23,6 @@ function WarnPage() {
     return () => clearInterval(intervalRef.current);
   }, []);
 
-  // Add a listener to `timeLeft`
   useEffect(() => {
     if (timer <= 0) {
       clearInterval(intervalRef.current);
