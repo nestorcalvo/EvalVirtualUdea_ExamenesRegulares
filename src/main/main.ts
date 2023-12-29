@@ -50,6 +50,9 @@ ipcMain.on('ipc-example', async (event, arg) => {
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
 });
+ipcMain.on('countdown_over', async () => {
+  console.log('WarnWindow message > Countdown to 0');
+});
 ipcMain.on('open_window', async (event) => {
   const msgTemplate = (windowState: string) => `Window state: ${windowState}`;
   // console.log(msgTemplate(arg));
@@ -59,14 +62,6 @@ ipcMain.on('open_window', async (event) => {
     event.reply('open_window', msgTemplate('close'));
   }
 });
-// ipcMain.on('warnWindowStatus', async (_event, arg) => {
-//   if (arg) {
-//     console.log('Mensaje recibido');
-//     warningWindowOpen = true;
-//   } else {
-//     warningWindowOpen = false;
-//   }
-// });
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();

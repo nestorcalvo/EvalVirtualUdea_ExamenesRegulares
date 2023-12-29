@@ -4,13 +4,15 @@ function WarnPage() {
   const [warning, setWarning] = useState('');
   const [warningType, setWarningType] = useState('');
   const [timer, setTimer] = useState(10);
-  window.electron.ipcRenderer.once('open_window', (args) => {
-    if (Array.isArray(args)) {
-      setWarningType('software');
-      const warn = args!.join(', ');
-      setWarning(warn);
-    }
-  });
+  useEffect(() => {
+    window.electron.ipcRenderer.once('open_window', (args) => {
+      if (Array.isArray(args)) {
+        setWarningType('software');
+        const warn = args!.join(', ');
+        setWarning(warn);
+      }
+    });
+  }, []);
   const intervalRef: any = useRef(); // Add a ref to store the interval id
 
   useEffect(() => {
@@ -24,6 +26,7 @@ function WarnPage() {
   useEffect(() => {
     if (timer <= 0) {
       clearInterval(intervalRef.current);
+      window.electron.ipcRenderer.sendMessage('countdown_over');
     }
   }, [timer]);
 
