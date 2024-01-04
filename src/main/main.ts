@@ -21,7 +21,7 @@ import { resolveHtmlPath } from './util';
 const warningFound = new EventEmitter();
 
 const psList = require('ps-list');
-
+const fkill = require('fkill');
 // class AppUpdater {
 //   constructor() {
 //     log.transports.file.level = 'info';
@@ -41,9 +41,9 @@ interface ProcessType {
 let mainWindow: BrowserWindow | null = null;
 let warnWindow: BrowserWindow | null = null;
 let warningWindowOpen: boolean = false;
-let arrayFound: Iterable<string> | null | undefined;
-let count: number = 0;
-const ITERATIONS: number = 1;
+let arrayFound: Array<string> | null | undefined;
+let pidFound: Array<number> | null | undefined;
+let userToken: string | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -52,6 +52,28 @@ ipcMain.on('ipc-example', async (event, arg) => {
 });
 ipcMain.on('countdown_over', async () => {
   console.log('WarnWindow message > Countdown to 0');
+  warnWindow?.close();
+  console.log('Main process message > Warning window closed');
+});
+ipcMain.on('screenshot', async () => {
+  console.log('WarnWindow message > Screenshoot time');
+  if (userToken) {
+    console.log('WarnWindow message > User found screenshoot taken');
+  } else {
+    console.log('WarnWindow message > User not found');
+  }
+});
+ipcMain.on('close_software', async () => {
+  console.log('WarnWindow message > Close softwares');
+  await fkill(pidFound, {
+    force: true,
+    ignoreCase: true,
+    silent: true,
+  });
+  console.log('Main process message > Software closed');
+});
+ipcMain.on('userLogin', (_event, arg) => {
+  userToken = arg;
 });
 ipcMain.on('open_window', async (event) => {
   const msgTemplate = (windowState: string) => `Window state: ${windowState}`;
@@ -70,9 +92,9 @@ if (process.env.NODE_ENV === 'production') {
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
-if (isDebug) {
-  require('electron-debug')();
-}
+// if (isDebug) {
+//   require('electron-debug')();
+// }
 const checkSoftware = async () => {
   let procesoFound = {};
   try {
@@ -210,15 +232,15 @@ const createWindow = async () => {
 
 warningFound.on('software', (args: Array<ProcessType>) => {
   arrayFound = args.map((e) => e.name);
+  pidFound = args.map((e) => e.pid);
   arrayFound = [...new Set(arrayFound)];
-  console.log('Warning found > software > ', arrayFound);
-  count += 1;
   // Check if there is two alerts of software
-  if (!warningWindowOpen && count === ITERATIONS) {
+  if (!warningWindowOpen && arrayFound?.length) {
+    console.log('Warning found > software > ', arrayFound);
     console.log('Warnwindow > open');
     createWarnWindow(mainWindow!, true);
+    // Set warningWindowOpen to true so it doesnt open a window
     warningWindowOpen = true;
-    count = 0;
   }
 });
 
