@@ -7,7 +7,10 @@ export type Channels =
   | 'ipc-example'
   | 'warnWindowStatus'
   | 'open_window'
-  | 'countdown_over';
+  | 'countdown_over'
+  | 'screenshot'
+  | 'close_software'
+  | 'userLogin';
 
 const electronHandler = {
   ipcRenderer: {
