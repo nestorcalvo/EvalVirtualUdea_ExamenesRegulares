@@ -47,6 +47,7 @@ function Login() {
       const AuthToken = JSON.stringify(response?.data?.token);
       setUser('');
       setPwd('');
+      window.electron.ipcRenderer.sendMessage('userLogin', AuthToken);
       navigate('/home', { state: { token: AuthToken } });
     } catch (err) {
       const error = err as AxiosError;
