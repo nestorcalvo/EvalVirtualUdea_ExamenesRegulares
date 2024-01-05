@@ -10,13 +10,17 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
+import url from 'url';
 import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
 // import { autoUpdater } from 'electron-updater';
 // import log from 'electron-log';
+import { createFileRoute, createURLRoute } from 'electron-router-dom';
 import { EventEmitter } from 'node:events';
 import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
+import { resolveHtmlPath, createPathFileWithRoute } from './util';
+
+const fs = require('fs');
 
 const warningFound = new EventEmitter();
 
@@ -147,7 +151,16 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
-  warnWindow.loadURL(resolveHtmlPath('warning'));
+  const route = 'warning';
+  const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
+
+  const fileRoute = createFileRoute(
+    path.join(__dirname, '../renderer/index.html'),
+    route
+  );
+  process.env.NODE_ENV === 'development'
+    ? warnWindow.loadURL(devServerURL)
+    : warnWindow.loadFile(...fileRoute);
   // warnWindow.webContents.send('open_window');
   warnWindow.once('ready-to-show', () => {
     warnWindow?.webContents.send(
@@ -191,16 +204,26 @@ const createWindow = async () => {
   });
 
   mainWindow.webContents.on('did-frame-finish-load', () => {
+    mainWindow!.webContents.openDevTools();
     if (isDebug) {
-      mainWindow!.webContents.openDevTools();
       mainWindow!.webContents.on('devtools-opened', () => {
         mainWindow!.focus();
       });
     }
     checkSoftware();
   });
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
+  const route = 'main';
+  const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
+
+  const fileRoute = createFileRoute(
+    path.join(__dirname, '../renderer/index.html'),
+    route
+  );
+  process.env.NODE_ENV === 'development'
+    ? mainWindow.loadURL(devServerURL)
+    : mainWindow.loadFile(...fileRoute);
   // createWarnWindow(mainWindow, false);
+
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
