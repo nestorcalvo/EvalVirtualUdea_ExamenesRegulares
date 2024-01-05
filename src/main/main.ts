@@ -10,7 +10,6 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import url from 'url';
 import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
 // import { autoUpdater } from 'electron-updater';
 // import log from 'electron-log';
@@ -18,9 +17,7 @@ import { createFileRoute, createURLRoute } from 'electron-router-dom';
 import { EventEmitter } from 'node:events';
 import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
-import { resolveHtmlPath, createPathFileWithRoute } from './util';
-
-const fs = require('fs');
+import { resolveHtmlPath } from './util';
 
 const warningFound = new EventEmitter();
 
