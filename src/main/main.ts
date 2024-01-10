@@ -9,12 +9,14 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+import os from 'os';
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen, net } from 'electron';
 // import { autoUpdater } from 'electron-updater';
-// import log from 'electron-log';
+import log from 'electron-log';
 import { createFileRoute, createURLRoute } from 'electron-router-dom';
 import { EventEmitter } from 'node:events';
+// import { BASE_URL_POSTMAN } from 'utils/constants';
 import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
@@ -30,6 +32,13 @@ const fkill = require('fkill');
 //     autoUpdater.checkForUpdatesAndNotify();
 //   }
 // }
+
+console.log = log.log;
+const BASE_URL_POSTMAN =
+  'https://5a667436-590b-4383-a2bb-42a790e2e7df.mock.pstmn.io';
+const BASE_URL_DEV = 'to be added';
+const BASE_URL = 'to be added';
+const TOKEN = '125413';
 interface ProcessType {
   pid: number;
   name: string;
@@ -45,12 +54,75 @@ let warningWindowOpen: boolean = false;
 let arrayFound: Array<string> | null | undefined;
 let pidFound: Array<number> | null | undefined;
 let userToken: string | null = null;
+const getDeviceInfo = () => {
+  const deviceInfo = {
+    arch: os.arch(),
+    processor: os.cpus(),
+    ram: os.totalmem(),
+    name: os.hostname(),
+    networkInterfaces: os.networkInterfaces(),
+    platform: os.platform(),
+    kernel: os.version(),
+    freemem: os.freemem(),
+  };
+  return deviceInfo;
+};
+const sendInformation = async (data: any, saveInfoLocalLog = false) => {
+  console.log('Envio de informacion solicitada');
+  const protoclName = BASE_URL_POSTMAN.split('//')[0];
+  const host = BASE_URL_POSTMAN.split('//')[1];
+  const request = net.request({
+    method: 'POST',
+    protocol: protoclName,
+    hostname: host,
+    path: '/warning',
+  });
+  // request.setHeader(
+  //   'Token-Security',
+  //   '13bqmrE5RBwj1Pj2FYxAshlQPyljjf8NZl4yZ5Fvm1wMJ0XnmcwCAgTqY6x0xuBC5K41n'
+  // );
+  request.setHeader('Content-Type', 'application/json');
+  request.write(JSON.stringify(data), 'utf-8');
+  request.on('response', (response) => {
+    // console.log(`STATUS sendInformation: ${response.statusCode}`);
+    // console.log(`HEADERS sendInformation: ${JSON.stringify(response.headers)}`);
+    // console.log(response);
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
+    if (saveInfoLocalLog) {
+      console.log(response);
+    }
+    if (response.statusCode === 401 || response.statusCode === 500) {
+      console.error(
+        `Error al envio de la petición > Codigo de respuesta entregado es ${response.statusCode}`
+      );
+      return response.statusCode;
+    }
+    response.on('data', (chunk) => {
+      if (saveInfoLocalLog) {
+        console.log(`BODY: ${chunk}`);
+      }
+    });
+    // response.on('end', () => {
+    //   response.on('data', (chunk) => {
+    //     if (saveInfoLocalLog) {
+    //       console.log(`BODY: ${chunk}`);
+    //     }
+    //   });
+    //   console.log('Evento fin send information');
+    //   if (response.statusCode === 200) {
+    //     console.log('Codigo de respuesta 200');
+    //     if (saveInfoLocalLog) {
+    //       console.log(response.statusCode);
+    //       console.log('Salida');
+    //     }
+    //     return true;
+    //   }
+    // });
+    return response.statusCode;
+  });
+  request.end();
+  return request;
+};
 ipcMain.on('countdown_over', async () => {
   console.log('WarnWindow message > Countdown to 0');
   warnWindow?.close();
@@ -73,8 +145,28 @@ ipcMain.on('close_software', async () => {
   });
   console.log('Main process message > Software closed');
 });
-ipcMain.on('userLogin', (_event, arg) => {
+ipcMain.on('userLogin', async (_event, arg) => {
   userToken = arg;
+  console.log(typeof userToken);
+  const deviceInfo = getDeviceInfo();
+  const body = {
+    identification: userToken,
+    type_log: 0,
+    remoteControl: false,
+    externalDevices: false,
+    externalScreen: false,
+    description: 'Registro informacion PC',
+    information: Buffer.from(JSON.stringify(deviceInfo)).toString('base64'),
+  };
+  // (version creada para pruebas Ude@ sin bloqueos v2.1a0)
+  const request = await sendInformation(body, true);
+  // Unauthorized
+  if (Number(request) === 401) {
+    console.warn(
+      'Problemas al envio de información inicial, checkear request o servidor'
+    );
+    console.log(request);
+  }
 });
 ipcMain.on('open_window', async (event) => {
   const msgTemplate = (windowState: string) => `Window state: ${windowState}`;
@@ -96,6 +188,7 @@ const isDebug =
 // if (isDebug) {
 //   require('electron-debug')();
 // }
+
 const checkSoftware = async () => {
   let procesoFound = {};
   try {
@@ -223,6 +316,7 @@ const createWindow = async () => {
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
+      console.error('"mainWindow" is not defined');
       throw new Error('"mainWindow" is not defined');
     }
     if (process.env.START_MINIMIZED) {
@@ -259,6 +353,7 @@ warningFound.on('software', (args: Array<ProcessType>) => {
     console.log('Warning found > software > ', arrayFound);
     console.log('Warnwindow > open');
     createWarnWindow(mainWindow!, true);
+
     // Set warningWindowOpen to true so it doesnt open a window
     warningWindowOpen = true;
   }

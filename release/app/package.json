@@ -1,12 +1,12 @@
 {
-  "name": "electron-react-boilerplate",
+  "name": "eval-virtual-udea-examenes",
   "version": "4.6.0",
-  "description": "A foundation for scalable desktop apps",
+  "description": "Aplicacion para la realización de examenes regulares en la Universidad de Antioquia",
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://github.com/electron-react-boilerplate"
+    "name": "Nestor Calvo",
+    "email": "nestor.calvo@udea.edu.co",
+    "url": "https://github.com/nestorcalvo"
   },
   "main": "./dist/main/main.js",
   "scripts": {
