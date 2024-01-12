@@ -24,6 +24,7 @@ import {
 import log from 'electron-log';
 import { createFileRoute, createURLRoute } from 'electron-router-dom';
 import { EventEmitter } from 'node:events';
+import { autoUpdater } from 'electron-updater';
 // import { BASE_URL_POSTMAN } from 'utils/constants';
 import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
@@ -33,13 +34,14 @@ const warningFound = new EventEmitter();
 
 const psList = require('ps-list');
 const fkill = require('fkill');
-// class AppUpdater {
-//   constructor() {
-//     log.transports.file.level = 'info';
-//     autoUpdater.logger = log;
-//     autoUpdater.checkForUpdatesAndNotify();
-//   }
-// }
+
+export default class AppUpdater {
+  constructor() {
+    log.transports.file.level = 'debug';
+    autoUpdater.logger = log;
+    autoUpdater.checkForUpdatesAndNotify();
+  }
+}
 
 console.log = log.log;
 const BASE_URL_POSTMAN =
@@ -62,6 +64,8 @@ let warningWindowOpen: boolean = false;
 let arrayFound: Array<string> | null | undefined;
 let pidFound: Array<number> | null | undefined;
 let userToken: string | null = null;
+let intervalId: ReturnType<typeof setInterval>;
+
 const getDeviceInfo = () => {
   const deviceInfo = {
     arch: os.arch(),
@@ -160,7 +164,7 @@ ipcMain.on('screenshot', async () => {
   }
 });
 ipcMain.on('close_software', async () => {
-  console.log('WarnWindow message > Close softwares');
+  console.log('WarnWindow message > Close software');
   await fkill(pidFound, {
     force: true,
     ignoreCase: true,
@@ -228,18 +232,18 @@ const checkSoftware = async () => {
   }
   return procesoFound;
 };
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
+// const installExtensions = async () => {
+//   const installer = require('electron-devtools-installer');
+//   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+//   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload
-    )
-    .catch(console.log);
-};
+//   return installer
+//     .default(
+//       extensions.map((name) => installer[name]),
+//       forceDownload
+//     )
+//     .catch(console.log);
+// };
 const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
   // if (isDebug) {
   //   await installExtensions();
@@ -321,7 +325,7 @@ const createWindow = async () => {
         mainWindow!.focus();
       });
     }
-    checkSoftware();
+    intervalId = setInterval(checkSoftware, 5000);
   });
   const route = 'main';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
@@ -348,6 +352,25 @@ const createWindow = async () => {
   });
 
   mainWindow.on('closed', () => {
+    if (userToken) {
+      console.log('Request sent to inform that app is going to be closed');
+      const body = {
+        identification: userToken,
+        type_log: 0,
+        remoteControl: false,
+        externalDevices: false,
+        externalScreen: false,
+        description: 'Cierre de aplicación',
+        information: '',
+      };
+      sendInformation(body, true)
+        .then(() => {
+          console.log('Request sent');
+        })
+        .catch(() => {
+          console.error('Error when sending information of app closed');
+        });
+    }
     mainWindow = null;
   });
 
@@ -411,7 +434,7 @@ warningFound.on('software', async (args: Array<ProcessType>) => {
 /**
  * Add event listeners...
  */
-const intervalId = setInterval(checkSoftware, 5000);
+
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
