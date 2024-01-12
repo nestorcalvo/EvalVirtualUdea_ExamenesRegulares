@@ -11,7 +11,15 @@
  */
 import os from 'os';
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, screen, net } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  screen,
+  net,
+  desktopCapturer,
+} from 'electron';
 // import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { createFileRoute, createURLRoute } from 'electron-router-dom';
@@ -68,7 +76,7 @@ const getDeviceInfo = () => {
   return deviceInfo;
 };
 const sendInformation = async (data: any, saveInfoLocalLog = false) => {
-  console.log('Envio de informacion solicitada');
+  console.log('Request to send information');
   const protoclName = BASE_URL_POSTMAN.split('//')[0];
   const host = BASE_URL_POSTMAN.split('//')[1];
   const request = net.request({
@@ -84,16 +92,13 @@ const sendInformation = async (data: any, saveInfoLocalLog = false) => {
   request.setHeader('Content-Type', 'application/json');
   request.write(JSON.stringify(data), 'utf-8');
   request.on('response', (response) => {
-    // console.log(`STATUS sendInformation: ${response.statusCode}`);
-    // console.log(`HEADERS sendInformation: ${JSON.stringify(response.headers)}`);
-    // console.log(response);
-
     if (saveInfoLocalLog) {
-      console.log(response);
+      console.log('Response status code: ', response.statusCode);
+      console.log('Response status message: ', response.statusMessage);
     }
     if (response.statusCode === 401 || response.statusCode === 500) {
       console.error(
-        `Error al envio de la petición > Codigo de respuesta entregado es ${response.statusCode}`
+        `Error when sending the request > Response code ${response.statusCode}`
       );
       return response.statusCode;
     }
@@ -102,22 +107,6 @@ const sendInformation = async (data: any, saveInfoLocalLog = false) => {
         console.log(`BODY: ${chunk}`);
       }
     });
-    // response.on('end', () => {
-    //   response.on('data', (chunk) => {
-    //     if (saveInfoLocalLog) {
-    //       console.log(`BODY: ${chunk}`);
-    //     }
-    //   });
-    //   console.log('Evento fin send information');
-    //   if (response.statusCode === 200) {
-    //     console.log('Codigo de respuesta 200');
-    //     if (saveInfoLocalLog) {
-    //       console.log(response.statusCode);
-    //       console.log('Salida');
-    //     }
-    //     return true;
-    //   }
-    // });
     return response.statusCode;
   });
   request.end();
@@ -132,6 +121,40 @@ ipcMain.on('screenshot', async () => {
   console.log('WarnWindow message > Screenshoot time');
   if (userToken) {
     console.log('WarnWindow message > User found screenshoot taken');
+    desktopCapturer
+      .getSources({
+        types: ['screen'],
+        thumbnailSize: {
+          width: 720,
+          height: 480,
+        },
+      })
+      .then((sources) => {
+        for (let i = 0; i < sources.length; i += 1) {
+          if (i === 0) {
+            // The image to display the screenshot
+            // console.log(sources);
+            const file = sources[i].thumbnail.toDataURL();
+
+            console.log('Main process message > Screenshot taken');
+            const body = {
+              identification: userToken,
+              type_log: 4,
+              remoteControl: arrayFound,
+              externalDevices: false,
+              externalScreen: false,
+              description: 'Screenshot',
+              information: file.split(',')[1],
+            };
+
+            sendInformation(body, true);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Main process message > Error when taking screenshot');
+        console.error(error);
+      });
   } else {
     console.log('WarnWindow message > User not found');
   }
@@ -147,7 +170,6 @@ ipcMain.on('close_software', async () => {
 });
 ipcMain.on('userLogin', async (_event, arg) => {
   userToken = arg;
-  console.log(typeof userToken);
   const deviceInfo = getDeviceInfo();
   const body = {
     identification: userToken,
@@ -158,7 +180,6 @@ ipcMain.on('userLogin', async (_event, arg) => {
     description: 'Registro informacion PC',
     information: Buffer.from(JSON.stringify(deviceInfo)).toString('base64'),
   };
-  // (version creada para pruebas Ude@ sin bloqueos v2.1a0)
   const request = await sendInformation(body, true);
   // Unauthorized
   if (Number(request) === 401) {
@@ -220,9 +241,9 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
-  if (isDebug) {
-    await installExtensions();
-  }
+  // if (isDebug) {
+  //   await installExtensions();
+  // }
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -269,9 +290,9 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
   return warnWindow;
 };
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
+  // if (isDebug) {
+  //   await installExtensions();
+  // }
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -344,7 +365,7 @@ const createWindow = async () => {
   // new AppUpdater();
 };
 
-warningFound.on('software', (args: Array<ProcessType>) => {
+warningFound.on('software', async (args: Array<ProcessType>) => {
   arrayFound = args.map((e) => e.name);
   pidFound = args.map((e) => e.pid);
   arrayFound = [...new Set(arrayFound)];
@@ -353,7 +374,35 @@ warningFound.on('software', (args: Array<ProcessType>) => {
     console.log('Warning found > software > ', arrayFound);
     console.log('Warnwindow > open');
     createWarnWindow(mainWindow!, true);
+    if (userToken) {
+      console.log('Main process > Sent warning information for software');
+      let descriptionPost = 'El usuario tiene: ';
+      if (arrayFound) {
+        descriptionPost += `[Softwares no permitidos: ${arrayFound}]`;
+      }
 
+      const body = {
+        identification: userToken,
+        type_log: 2,
+        remoteControl: arrayFound,
+        externalDevices: false,
+        externalScreen: false,
+        description: descriptionPost,
+        information: Buffer.from(
+          JSON.stringify({
+            arrayFound,
+          })
+        ).toString('base64'),
+      };
+      const request = await sendInformation(body, true);
+      // Unauthorized
+      if (Number(request) === 401) {
+        console.warn(
+          'Problemas al envio de información de warning, checkear request o servidor'
+        );
+        console.log(request);
+      }
+    }
     // Set warningWindowOpen to true so it doesnt open a window
     warningWindowOpen = true;
   }
