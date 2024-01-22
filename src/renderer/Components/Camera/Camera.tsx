@@ -6,12 +6,15 @@ const videoConstraints = {
   height: 240,
   facingMode: 'user',
 };
+function WebcamComponent() {
+  return <Webcam audio={false} videoConstraints={videoConstraints} />;
+}
 function Camera() {
   return (
     <div
       style={{ height: videoConstraints.height, width: videoConstraints.width }}
     >
-      <Webcam audio={false} videoConstraints={videoConstraints} />
+      <WebcamComponent />
     </div>
   );
 }
