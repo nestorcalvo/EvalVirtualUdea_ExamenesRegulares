@@ -46,9 +46,9 @@ export default class AppUpdater {
 console.log = log.log;
 const BASE_URL_POSTMAN =
   'https://5a667436-590b-4383-a2bb-42a790e2e7df.mock.pstmn.io';
-const BASE_URL_DEV = 'to be added';
-const BASE_URL = 'to be added';
-const TOKEN = '125413';
+// const BASE_URL_DEV = 'to be added';
+// const BASE_URL = 'to be added';
+// const TOKEN = '125413';
 interface ProcessType {
   pid: number;
   name: string;
@@ -120,6 +120,10 @@ ipcMain.on('countdown_over', async () => {
   console.log('WarnWindow message > Countdown to 0');
   warnWindow?.close();
   console.log('Main process message > Warning window closed');
+});
+ipcMain.on('start_exam', async (_event, url) => {
+  console.log('Message from HomePage > Start exam');
+  mainWindow?.loadURL(url);
 });
 ipcMain.on('screenshot', async () => {
   console.log('WarnWindow message > Screenshoot time');

@@ -10,7 +10,8 @@ export type Channels =
   | 'countdown_over'
   | 'screenshot'
   | 'close_software'
-  | 'userLogin';
+  | 'userLogin'
+  | 'start_exam';
 
 const electronHandler = {
   ipcRenderer: {

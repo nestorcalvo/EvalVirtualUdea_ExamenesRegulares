@@ -7,6 +7,7 @@ import { Card, Typography, Divider, Paper, Button } from '@mui/material';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
+import { URL_EXAM } from 'utils/constants';
 
 import icon from '../../../../assets/icon.png';
 
@@ -21,7 +22,11 @@ const Item = styled(Paper)(({ theme }) => ({
 function Home() {
   const { state } = useLocation();
   const token = state?.token;
-
+  const renderExamPage = () => {
+    console.log('Iniciar examen');
+    // ipcRenderer.send("exam");
+    window.electron.ipcRenderer.sendMessage('start_exam', URL_EXAM);
+  };
   return (
     <Box sx={{ width: '100%' }} justifyContent="center">
       <div>
@@ -43,6 +48,15 @@ function Home() {
           <Camera />
         </Item>
       </Stack>
+      <Button
+        type="submit"
+        fullWidth
+        variant="contained"
+        onClick={renderExamPage}
+        sx={{ mx: 'auto', maxWidth: '20%', bgcolor: 'success.main' }}
+      >
+        Iniciar Examen
+      </Button>
     </Box>
   );
 }
