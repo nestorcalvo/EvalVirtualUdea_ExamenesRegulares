@@ -3,7 +3,7 @@
 import { useLocation } from 'react-router-dom';
 import Camera from 'renderer/Components/Camera/Camera';
 import Information from 'renderer/Components/Information/Information';
-import { Card, Typography, Divider, Paper, Button } from '@mui/material';
+import { Divider, Paper, Button } from '@mui/material';
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
@@ -20,11 +20,9 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 function Home() {
-  const { state } = useLocation();
-  const token = state?.token;
+  // const { state } = useLocation();
+  // const token = state?.token;
   const renderExamPage = () => {
-    console.log('Iniciar examen');
-    // ipcRenderer.send("exam");
     window.electron.ipcRenderer.sendMessage('start_exam', URL_EXAM);
   };
   return (
@@ -41,7 +39,6 @@ function Home() {
         alignItems="center"
       >
         <Item>
-          <h1>{token}</h1>
           <Information />
         </Item>
         <Item>
