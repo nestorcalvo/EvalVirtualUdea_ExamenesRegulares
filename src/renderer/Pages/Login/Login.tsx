@@ -14,7 +14,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import instance from 'renderer/axiosConfig';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Image from '../../../../assets/login_image.jpeg';
+import Image from '../../../../assets/udea_login_2.jpeg';
 
 const theme = createTheme();
 
@@ -77,13 +77,13 @@ function Login() {
             md={7}
             sx={{
               backgroundImage: `url(${Image})`,
+              backgroundSize: 'cover',
               backgroundRepeat: 'no-repeat',
               backgroundColor: (t) =>
                 t.palette.mode === 'light'
                   ? t.palette.grey[50]
                   : t.palette.grey[900],
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundPosition: 'left',
             }}
           />
           <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6}>
