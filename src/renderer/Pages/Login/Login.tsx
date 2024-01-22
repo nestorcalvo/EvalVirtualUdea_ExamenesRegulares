@@ -96,7 +96,7 @@ function Login() {
                 alignItems: 'center',
               }}
             >
-              <Avatar sx={{ m: 1, bgcolor: 'success.main' }}>
+              <Avatar sx={{ m: 1, backgroundColor: '#0B8983' }}>
                 <LockOutlinedIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
@@ -137,7 +137,7 @@ function Login() {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2, bgcolor: 'success.main' }}
+                  sx={{ mt: 3, mb: 2, backgroundColor: '#0B8983' }}
                 >
                   Log In
                 </Button>
