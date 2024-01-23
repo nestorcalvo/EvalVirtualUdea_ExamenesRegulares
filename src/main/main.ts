@@ -339,9 +339,10 @@ const createWindow = async () => {
   });
   mainWindow.setContentProtection(!isDebug);
   mainWindow.setAlwaysOnTop(!isDebug, 'screen-saver');
+  mainWindow.setFullScreen(!isDebug);
   mainWindow.webContents.on('did-frame-finish-load', () => {
-    mainWindow!.webContents.openDevTools();
     if (isDebug) {
+      mainWindow!.webContents.openDevTools();
       mainWindow!.webContents.on('devtools-opened', () => {
         mainWindow!.focus();
       });
