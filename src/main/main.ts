@@ -124,6 +124,16 @@ ipcMain.on('countdown_over', async () => {
 ipcMain.on('start_exam', async (_event, url) => {
   console.log('Message from HomePage > Start exam');
   mainWindow?.loadURL(url);
+  const body = {
+    identification: userToken,
+    type_log: 1,
+    remoteControl: false,
+    externalDevices: false,
+    externalScreen: false,
+    description: 'Examen iniciado',
+    information: '',
+  };
+  sendInformation(body, true);
 });
 ipcMain.on('screenshot', async () => {
   console.log('WarnWindow message > Screenshoot time');
@@ -264,12 +274,16 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
     parent,
     show,
     icon: getAssetPath('icon.png'),
+    resizable: isDebug,
+    minimizable: isDebug,
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+  warnWindow.setContentProtection(!isDebug);
+  warnWindow.setAlwaysOnTop(isDebug, 'pop-up-menu');
   const route = 'warning';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
 
@@ -280,7 +294,6 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
   process.env.NODE_ENV === 'development'
     ? warnWindow.loadURL(devServerURL)
     : warnWindow.loadFile(...fileRoute);
-  // warnWindow.webContents.send('open_window');
   warnWindow.once('ready-to-show', () => {
     warnWindow?.webContents.send(
       'open_window',
@@ -314,6 +327,9 @@ const createWindow = async () => {
     show: false,
     width: isDebug ? 1024 : screen.getPrimaryDisplay().workAreaSize.width,
     height: isDebug ? 728 : screen.getPrimaryDisplay().workAreaSize.height,
+    resizable: isDebug,
+    minimizable: isDebug,
+
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -321,7 +337,8 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
-
+  mainWindow.setContentProtection(!isDebug);
+  mainWindow.setAlwaysOnTop(!isDebug, 'screen-saver');
   mainWindow.webContents.on('did-frame-finish-load', () => {
     mainWindow!.webContents.openDevTools();
     if (isDebug) {
