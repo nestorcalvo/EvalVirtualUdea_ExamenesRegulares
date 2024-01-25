@@ -11,7 +11,8 @@ export type Channels =
   | 'screenshot'
   | 'close_software'
   | 'userLogin'
-  | 'start_exam';
+  | 'start_exam'
+  | 'show_notification';
 
 const electronHandler = {
   ipcRenderer: {

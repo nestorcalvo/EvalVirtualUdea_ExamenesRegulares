@@ -3,15 +3,47 @@
 import Camera from 'renderer/Components/Camera/Camera';
 import Information from 'renderer/Components/Information/Information';
 import { Container, Button, Typography } from '@mui/material';
+import { ToastContainer, toast, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 import Box from '@mui/material/Box';
 import { URL_EXAM } from 'utils/constants';
+
+window.electron.ipcRenderer.on('show_notification', (content) => {
+  if (typeof content === 'string') {
+    toast(content, {
+      position: 'bottom-right',
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: false,
+      progress: undefined,
+      theme: 'light',
+      transition: Slide,
+    });
+  }
+});
 
 function Home() {
   const renderExamPage = () => {
     window.electron.ipcRenderer.sendMessage('start_exam', URL_EXAM);
   };
+
   return (
     <Container maxWidth="sm" style={{ justifyContent: 'center' }}>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+
       <Box display="flex" flexWrap="wrap" justifyContent="center">
         <Typography
           variant="body1"

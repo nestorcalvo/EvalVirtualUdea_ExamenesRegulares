@@ -199,7 +199,7 @@ ipcMain.on('userLogin', async (_event, arg) => {
     information: Buffer.from(JSON.stringify(deviceInfo)).toString('base64'),
   };
   const request = await sendInformation(body, true);
-  // Unauthorized
+  mainWindow?.webContents.send('show_notification', 'Mensaje desde main');
   if (Number(request) === 401) {
     console.warn(
       'Problemas al envio de información inicial, checkear request o servidor'
