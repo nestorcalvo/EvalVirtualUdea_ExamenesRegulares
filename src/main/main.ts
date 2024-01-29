@@ -371,6 +371,7 @@ const createWindow = async () => {
       mainWindow.minimize();
     } else {
       mainWindow.show();
+      mainWindow?.webContents.send('check_version', app.getVersion());
     }
   });
 

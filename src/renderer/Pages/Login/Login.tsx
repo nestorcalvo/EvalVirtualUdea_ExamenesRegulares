@@ -17,7 +17,6 @@ import { useNavigate } from 'react-router-dom';
 import Image from '../../../../assets/udea_login_2.jpeg';
 
 const theme = createTheme();
-
 function Login() {
   const userRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLInputElement>(null);
@@ -25,12 +24,21 @@ function Login() {
   const [user, setUser] = useState('');
   const [pwd, setPwd] = useState('');
   const [wrongMessage, setWrongMessage] = useState('');
+  const [version, setVersion] = useState('');
+  useEffect(() => {
+    window.electron.ipcRenderer.on('check_version', (args) => {
+      if (typeof args === 'string') {
+        setVersion(args);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (userRef.current) {
       userRef.current.focus();
     }
   }, []);
+
   useEffect(() => {
     setWrongMessage('');
   }, [user, pwd]);
@@ -141,9 +149,11 @@ function Login() {
                 >
                   Log In
                 </Button>
-                <Typography sx={{ color: '#424242' }}>
-                  v{window.require('electron').app.getVersion()}
-                </Typography>
+                {version && (
+                  <Typography variant="caption" sx={{ color: '#424242' }}>
+                    v{version}
+                  </Typography>
+                )}
               </Box>
 
               <section>
