@@ -35,14 +35,14 @@ const warningFound = new EventEmitter();
 const psList = require('ps-list');
 const fkill = require('fkill');
 
-export default class AppUpdater {
-  constructor() {
-    console.log('App Updater created');
-    log.transports.file.level = 'debug';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+// export default class AppUpdater {
+//   constructor() {
+//     console.log('App Updater created');
+//     log.transports.file.level = 'debug';
+//     autoUpdater.logger = log;
+//     autoUpdater.checkForUpdatesAndNotify();
+//   }
+// }
 
 console.log = log.log;
 const BASE_URL_POSTMAN =
@@ -409,9 +409,29 @@ const createWindow = async () => {
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
-  new AppUpdater();
+  // new AppUpdater();
 };
-
+function sendStatusToWindow(content: any) {
+  mainWindow?.on('ready-to-show', () => {
+    mainWindow?.webContents.send('show_notification', content);
+    console.log(content);
+  });
+}
+autoUpdater.on('checking-for-update', () => {
+  sendStatusToWindow('Checking for update...');
+});
+autoUpdater.on('update-available', (info) => {
+  sendStatusToWindow('Update available.');
+});
+autoUpdater.on('update-not-available', (info) => {
+  sendStatusToWindow('Update not available.');
+});
+autoUpdater.on('error', (err) => {
+  sendStatusToWindow(`Error in auto-updater. ${err}`);
+});
+autoUpdater.on('update-downloaded', (info) => {
+  sendStatusToWindow('Update downloaded');
+});
 warningFound.on('software', async (args: Array<ProcessType>) => {
   arrayFound = args.map((e) => e.name);
   pidFound = args.map((e) => e.pid);
@@ -473,6 +493,7 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+    autoUpdater.checkForUpdatesAndNotify();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

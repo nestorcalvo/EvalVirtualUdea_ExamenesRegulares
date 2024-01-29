@@ -11,12 +11,15 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import React, { useState, useRef, useEffect } from 'react';
+import { ToastContainer, toast, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 import instance from 'renderer/axiosConfig';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Image from '../../../../assets/udea_login_2.jpeg';
 
 const theme = createTheme();
+
 function Login() {
   const userRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLInputElement>(null);
@@ -25,6 +28,7 @@ function Login() {
   const [pwd, setPwd] = useState('');
   const [wrongMessage, setWrongMessage] = useState('');
   const [version, setVersion] = useState('');
+
   useEffect(() => {
     window.electron.ipcRenderer.on('check_version', (args) => {
       if (typeof args === 'string') {
@@ -32,6 +36,24 @@ function Login() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('show_notification', (args) => {
+      if (typeof args === 'string') {
+        toast(args, {
+          position: 'bottom-right',
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+          progress: undefined,
+          theme: 'light',
+          transition: Slide,
+        });
+      }
+    });
+  });
 
   useEffect(() => {
     if (userRef.current) {
@@ -77,6 +99,18 @@ function Login() {
       {/* <CheckCohort /> */}
       <ThemeProvider theme={theme}>
         <Grid container component="main" sx={{ height: '100%' }}>
+          <ToastContainer
+            position="bottom-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
           <CssBaseline />
           <Grid
             item
