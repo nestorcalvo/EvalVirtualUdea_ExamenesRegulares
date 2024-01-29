@@ -141,6 +141,9 @@ function Login() {
                 >
                   Log In
                 </Button>
+                <Typography sx={{ color: '#424242' }}>
+                  v{window.require('electron').app.getVersion()}
+                </Typography>
               </Box>
 
               <section>

@@ -37,6 +37,7 @@ const fkill = require('fkill');
 
 export default class AppUpdater {
   constructor() {
+    console.log('App Updater created');
     log.transports.file.level = 'debug';
     autoUpdater.logger = log;
     autoUpdater.checkForUpdatesAndNotify();
@@ -407,7 +408,7 @@ const createWindow = async () => {
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
-  // new AppUpdater();
+  new AppUpdater();
 };
 
 warningFound.on('software', async (args: Array<ProcessType>) => {
