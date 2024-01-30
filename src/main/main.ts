@@ -20,12 +20,14 @@ import {
   net,
   desktopCapturer,
 } from 'electron';
+
 // import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { createFileRoute, createURLRoute } from 'electron-router-dom';
 import { EventEmitter } from 'node:events';
 import { autoUpdater } from 'electron-updater';
 // import { BASE_URL_POSTMAN } from 'utils/constants';
+import * as Sentry from '@sentry/electron/main';
 import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
@@ -34,15 +36,18 @@ const warningFound = new EventEmitter();
 
 const psList = require('ps-list');
 const fkill = require('fkill');
+const { crashReporter } = require('electron');
 
-// export default class AppUpdater {
-//   constructor() {
-//     console.log('App Updater created');
-//     log.transports.file.level = 'debug';
-//     autoUpdater.logger = log;
-//     autoUpdater.checkForUpdatesAndNotify();
-//   }
-// }
+Sentry.init({
+  dsn: 'https://abc0487a3bfb9f750007f4b5a5820614@o4506662181601280.ingest.sentry.io/4506662193856512',
+});
+crashReporter.start({
+  companyName: 'nestor-calvo',
+  productName: 'examenes_regulares',
+  ignoreSystemCrashHandler: true,
+  submitURL:
+    'https://abc0487a3bfb9f750007f4b5a5820614@o4506662181601280.ingest.sentry.io/4506662193856512',
+});
 
 console.log = log.log;
 const BASE_URL_POSTMAN =
@@ -236,6 +241,7 @@ const checkScreen = async () => {
 
   if (screenFound.length > 1) {
     numberScreenFound = screenFound.length;
+    process.crash();
     warningFound.emit('multiple-screen', numberScreenFound);
   }
 };
