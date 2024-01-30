@@ -1,3 +1,4 @@
+import { Container, Typography, Box } from '@mui/material';
 import React, { useState, useEffect, useRef } from 'react';
 
 function WarnPage() {
@@ -12,6 +13,12 @@ function WarnPage() {
         setWarningType('software');
         const warn = args!.join(', ');
         setWarning(warn);
+      } else if (typeof args === 'number') {
+        setWarningType('screen');
+        const warn = `Se han detectado ${args} pantallas.
+        Recuerde que el uso de pantallas externas está prohibido durante el examen y puede ser sancionado.
+        Por favor, desconectar la pantalla adicional para poder continuar con el examen y permitir el cierre de esta ventana.`;
+        setWarning(warn);
       }
     });
   }, []);
@@ -19,14 +26,16 @@ function WarnPage() {
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       setTimer((t) => t - 1);
-      if (timer === 10) {
-        window.electron.ipcRenderer.sendMessage('screenshot');
-      } else if (timer === 5) {
-        window.electron.ipcRenderer.sendMessage('close_software');
+      if (warningType === 'software') {
+        if (timer === 10) {
+          window.electron.ipcRenderer.sendMessage('screenshot');
+        } else if (timer === 5) {
+          window.electron.ipcRenderer.sendMessage('close_software');
+        }
       }
     }, 1000);
     return () => clearInterval(intervalRef.current);
-  }, [timer]);
+  }, [timer, warningType]);
 
   useEffect(() => {
     if (timer <= 0) {
@@ -37,9 +46,29 @@ function WarnPage() {
 
   return (
     <div>
-      <h1>ALERTA</h1>
-      {warningType === 'software' && <h1>{warning}</h1>}
-      <h1>{timer}</h1>
+      <Container maxWidth="sm" style={{ justifyContent: 'center' }}>
+        <Box display="flex" flexWrap="wrap" justifyContent="center">
+          <Typography component="h1" variant="h4">
+            ALERTA
+          </Typography>
+
+          <div>
+            {warningType === 'software' && (
+              <Typography component="h1" variant="h5">
+                {warning}
+              </Typography>
+            )}
+            {warningType === 'screen' && (
+              <Typography component="h1" variant="h5">
+                {warning}
+              </Typography>
+            )}
+          </div>
+          <Typography component="h1" variant="h4">
+            {timer}
+          </Typography>
+        </Box>
+      </Container>
     </div>
   );
 }

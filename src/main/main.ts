@@ -63,9 +63,11 @@ let mainWindow: BrowserWindow | null = null;
 let warnWindow: BrowserWindow | null = null;
 let warningWindowOpen: boolean = false;
 let arrayFound: Array<string> | null | undefined;
+let numberScreenFound: number | null | undefined;
 let pidFound: Array<number> | null | undefined;
 let userToken: string | null = null;
-let intervalId: ReturnType<typeof setInterval>;
+let intervalIdScreen: ReturnType<typeof setInterval>;
+let intervalIdSoftware: ReturnType<typeof setInterval>;
 
 const getDeviceInfo = () => {
   const deviceInfo = {
@@ -200,7 +202,6 @@ ipcMain.on('userLogin', async (_event, arg) => {
     information: Buffer.from(JSON.stringify(deviceInfo)).toString('base64'),
   };
   const request = await sendInformation(body, true);
-  mainWindow?.webContents.send('show_notification', 'Mensaje desde main');
   if (Number(request) === 401) {
     console.warn(
       'Problemas al envio de información inicial, checkear request o servidor'
@@ -228,7 +229,16 @@ const isDebug =
 // if (isDebug) {
 //   require('electron-debug')();
 // }
+const checkScreen = async () => {
+  const screenFound: ReturnType<typeof screen.getAllDisplays> =
+    screen.getAllDisplays();
+  // If there is more than one screen
 
+  if (screenFound.length > 1) {
+    numberScreenFound = screenFound.length;
+    warningFound.emit('multiple-screen', numberScreenFound);
+  }
+};
 const checkSoftware = async () => {
   let procesoFound = {};
   try {
@@ -259,7 +269,11 @@ const checkSoftware = async () => {
 //     )
 //     .catch(console.log);
 // };
-const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
+const createWarnWindow = async (
+  parent: BrowserWindow,
+  show: boolean,
+  warning: number | Array<string> | boolean
+) => {
   // if (isDebug) {
   //   await installExtensions();
   // }
@@ -298,7 +312,7 @@ const createWarnWindow = async (parent: BrowserWindow, show: boolean) => {
   warnWindow.once('ready-to-show', () => {
     warnWindow?.webContents.send(
       'open_window',
-      warningWindowOpen ? arrayFound : false
+      warningWindowOpen ? warning : false
     );
   });
   isDebug
@@ -348,7 +362,8 @@ const createWindow = async () => {
         mainWindow!.focus();
       });
     }
-    intervalId = setInterval(checkSoftware, 5000);
+    intervalIdSoftware = setInterval(checkSoftware, 5000);
+    intervalIdScreen = setInterval(checkScreen, 5000);
   });
   const route = 'main';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
@@ -414,22 +429,21 @@ const createWindow = async () => {
 function sendStatusToWindow(content: any) {
   mainWindow?.on('ready-to-show', () => {
     mainWindow?.webContents.send('show_notification', content);
-    console.log(content);
   });
 }
 autoUpdater.on('checking-for-update', () => {
   sendStatusToWindow('Checking for update...');
 });
-autoUpdater.on('update-available', (info) => {
+autoUpdater.on('update-available', () => {
   sendStatusToWindow('Update available.');
 });
-autoUpdater.on('update-not-available', (info) => {
+autoUpdater.on('update-not-available', () => {
   sendStatusToWindow('Update not available.');
 });
 autoUpdater.on('error', (err) => {
   sendStatusToWindow(`Error in auto-updater. ${err}`);
 });
-autoUpdater.on('update-downloaded', (info) => {
+autoUpdater.on('update-downloaded', () => {
   sendStatusToWindow('Update downloaded');
 });
 warningFound.on('software', async (args: Array<ProcessType>) => {
@@ -440,7 +454,7 @@ warningFound.on('software', async (args: Array<ProcessType>) => {
   if (!warningWindowOpen && arrayFound?.length) {
     console.log('Warning found > software > ', arrayFound);
     console.log('Warnwindow > open');
-    createWarnWindow(mainWindow!, true);
+    createWarnWindow(mainWindow!, true, arrayFound);
     if (userToken) {
       console.log('Main process > Sent warning information for software');
       let descriptionPost = 'El usuario tiene: ';
@@ -475,6 +489,39 @@ warningFound.on('software', async (args: Array<ProcessType>) => {
   }
 });
 
+warningFound.on('multiple-screen', async (args: number) => {
+  if (!warningWindowOpen) {
+    console.log('Warning found > multiple screens > ', args);
+    console.log('Warnwindow > open');
+    createWarnWindow(mainWindow!, true, args);
+    if (userToken) {
+      console.log(
+        'Main process > Sent warning information for multiple screen'
+      );
+      let descriptionPost = 'El usuario tiene: ';
+      descriptionPost += `${args} pantallas`;
+      const body = {
+        identification: userToken,
+        type_log: 2,
+        remoteControl: false,
+        externalDevices: false,
+        externalScreen: true,
+        description: descriptionPost,
+        information: `${args} pantallas`,
+      };
+      const request = await sendInformation(body, true);
+      // Unauthorized
+      if (Number(request) === 401) {
+        console.warn(
+          'Problemas al envio de información de warning, checkear request o servidor'
+        );
+        console.log(request);
+      }
+    }
+    // Set warningWindowOpen to true so it doesnt open a window
+    warningWindowOpen = true;
+  }
+});
 /**
  * Add event listeners...
  */
@@ -487,7 +534,8 @@ app.on('window-all-closed', () => {
   }
 });
 app.on('before-quit', () => {
-  clearInterval(intervalId);
+  clearInterval(intervalIdScreen);
+  clearInterval(intervalIdSoftware);
 });
 app
   .whenReady()
