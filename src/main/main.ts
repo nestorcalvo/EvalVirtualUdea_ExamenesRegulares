@@ -35,14 +35,14 @@ const warningFound = new EventEmitter();
 const psList = require('ps-list');
 const fkill = require('fkill');
 
-// export default class AppUpdater {
-//   constructor() {
-//     console.log('App Updater created');
-//     log.transports.file.level = 'debug';
-//     autoUpdater.logger = log;
-//     autoUpdater.checkForUpdatesAndNotify();
-//   }
-// }
+export default class AppUpdater {
+  constructor() {
+    console.log('App Updater created');
+    log.transports.file.level = 'debug';
+    autoUpdater.logger = log;
+    autoUpdater.checkForUpdatesAndNotify();
+  }
+}
 
 console.log = log.log;
 const BASE_URL_POSTMAN =
@@ -229,16 +229,16 @@ const isDebug =
 // if (isDebug) {
 //   require('electron-debug')();
 // }
-const checkScreen = async () => {
-  const screenFound: ReturnType<typeof screen.getAllDisplays> =
-    screen.getAllDisplays();
-  // If there is more than one screen
+// const checkScreen = async () => {
+//   const screenFound: ReturnType<typeof screen.getAllDisplays> =
+//     screen.getAllDisplays();
+//   // If there is more than one screen
 
-  if (screenFound.length > 1) {
-    numberScreenFound = screenFound.length;
-    warningFound.emit('multiple-screen', numberScreenFound);
-  }
-};
+//   if (screenFound.length > 1) {
+//     numberScreenFound = screenFound.length;
+//     warningFound.emit('multiple-screen', numberScreenFound);
+//   }
+// };
 const checkSoftware = async () => {
   let procesoFound = {};
   try {
@@ -363,7 +363,7 @@ const createWindow = async () => {
       });
     }
     intervalIdSoftware = setInterval(checkSoftware, 5000);
-    intervalIdScreen = setInterval(checkScreen, 5000);
+    // intervalIdScreen = setInterval(checkScreen, 5000);
   });
   const route = 'main';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
@@ -431,21 +431,7 @@ function sendStatusToWindow(content: any) {
     mainWindow?.webContents.send('show_notification', content);
   });
 }
-autoUpdater.on('checking-for-update', () => {
-  sendStatusToWindow('Checking for update...');
-});
-autoUpdater.on('update-available', () => {
-  sendStatusToWindow('Update available.');
-});
-autoUpdater.on('update-not-available', () => {
-  sendStatusToWindow('Update not available.');
-});
-autoUpdater.on('error', (err) => {
-  sendStatusToWindow(`Error in auto-updater. ${err}`);
-});
-autoUpdater.on('update-downloaded', () => {
-  sendStatusToWindow('Update downloaded');
-});
+
 warningFound.on('software', async (args: Array<ProcessType>) => {
   arrayFound = args.map((e) => e.name);
   pidFound = args.map((e) => e.pid);
