@@ -43,7 +43,8 @@ const fkill = require('fkill');
 //     autoUpdater.checkForUpdatesAndNotify();
 //   }
 // }
-
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
 console.log = log.log;
 const BASE_URL_POSTMAN =
   'https://5a667436-590b-4383-a2bb-42a790e2e7df.mock.pstmn.io';
@@ -426,6 +427,27 @@ const createWindow = async () => {
   // eslint-disable-next-line
   // new AppUpdater();
 };
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+});
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available.', info);
+});
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available.', info);
+});
+autoUpdater.on('error', (err) => {
+  console.log(`Error in auto-updater. ${err}`);
+});
+autoUpdater.on('download-progress', (progressObj) => {
+  let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
+  logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
+  logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
+  console.log(logMessage);
+});
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded', info);
+});
 function sendStatusToWindow(content: any) {
   mainWindow?.on('ready-to-show', () => {
     mainWindow?.webContents.send('show_notification', content);
@@ -527,10 +549,10 @@ app
   .whenReady()
   .then(() => {
     createWindow();
-    autoUpdater.on('update-available', (info) => {
-      console.log(info);
-    });
-    autoUpdater.checkForUpdates();
+    // autoUpdater.on('update-available', (info) => {
+    //   console.log(info);
+    // });
+    // autoUpdater.checkForUpdates();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
