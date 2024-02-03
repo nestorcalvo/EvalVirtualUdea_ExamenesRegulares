@@ -35,14 +35,14 @@ const warningFound = new EventEmitter();
 const psList = require('ps-list');
 const fkill = require('fkill');
 
-export default class AppUpdater {
-  constructor() {
-    console.log('App Updater created');
-    log.transports.file.level = 'debug';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+// export default class AppUpdater {
+//   constructor() {
+//     console.log('App Updater created');
+//     log.transports.file.level = 'debug';
+//     autoUpdater.logger = log;
+//     autoUpdater.checkForUpdatesAndNotify();
+//   }
+// }
 
 console.log = log.log;
 const BASE_URL_POSTMAN =
@@ -83,7 +83,7 @@ const getDeviceInfo = () => {
   return deviceInfo;
 };
 const sendInformation = async (data: any, saveInfoLocalLog = false) => {
-  console.log('Request to send information');
+  console.log('Entry of function to send information');
   const protoclName = BASE_URL_POSTMAN.split('//')[0];
   const host = BASE_URL_POSTMAN.split('//')[1];
   const request = net.request({
@@ -527,7 +527,10 @@ app
   .whenReady()
   .then(() => {
     createWindow();
-    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.on('update-available', (info) => {
+      console.log(info);
+    });
+    autoUpdater.checkForUpdates();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
