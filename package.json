@@ -74,8 +74,6 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.9",
     "@mui/material": "^5.14.9",
-    "@sentry/electron": "^4.17.0",
-    "@sentry/webpack-plugin": "^2.10.3",
     "axios": "^1.6.2",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
@@ -200,18 +198,14 @@
       "target": [
         "nsis"
       ],
-      "publish": [
-        "github"
-      ]
+      "publish": ["github"]
     },
     "linux": {
       "target": [
         "AppImage"
       ],
       "category": "Development",
-      "publish": [
-        "github"
-      ]
+      "publish": ["github"]
     },
     "directories": {
       "app": "release/app",

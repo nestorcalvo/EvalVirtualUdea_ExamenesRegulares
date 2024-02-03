@@ -1,14 +1,10 @@
 import { createRoot } from 'react-dom/client';
-import * as Sentry from '@sentry/electron/renderer';
 import App from './App';
 
 (window as any).$ = require('jquery');
 (window as any).jQuery = require('jquery');
 
 const container = document.getElementById('root') as HTMLElement;
-Sentry.init({
-  dsn: 'https://abc0487a3bfb9f750007f4b5a5820614@o4506662181601280.ingest.sentry.io/4506662193856512',
-});
 const root = createRoot(container);
 root.render(<App />);
 
