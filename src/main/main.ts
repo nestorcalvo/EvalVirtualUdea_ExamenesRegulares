@@ -427,11 +427,17 @@ const createWindow = async () => {
   // eslint-disable-next-line
   // new AppUpdater();
 };
+function sendStatusToWindow(content: any) {
+  mainWindow?.on('ready-to-show', () => {
+    mainWindow?.webContents.send('show_notification', content);
+  });
+}
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
 });
 autoUpdater.on('update-available', (info) => {
   console.log('Update available.', info);
+  sendStatusToWindow('Update available');
 });
 autoUpdater.on('update-not-available', (info) => {
   console.log('Update not available.', info);
@@ -447,12 +453,10 @@ autoUpdater.on('download-progress', (progressObj) => {
 });
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Update downloaded', info);
+  sendStatusToWindow(
+    'There is a new update that was already downloaded, please close the app to install the updates'
+  );
 });
-function sendStatusToWindow(content: any) {
-  mainWindow?.on('ready-to-show', () => {
-    mainWindow?.webContents.send('show_notification', content);
-  });
-}
 
 warningFound.on('software', async (args: Array<ProcessType>) => {
   arrayFound = args.map((e) => e.name);
