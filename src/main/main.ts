@@ -434,7 +434,6 @@ const createWindow = async () => {
 // }
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
-  dialog.showMessageBox(mainWindow!, { message: 'Checking for update...' });
 });
 autoUpdater.on('update-available', (info) => {
   console.log('Update available.', info);
@@ -455,9 +454,8 @@ autoUpdater.on('update-available', (info) => {
       console.log(err);
     });
 });
-autoUpdater.on('update-not-available', (info) => {
-  console.log('Update not available.', info);
-  dialog.showMessageBox(mainWindow!, { message: 'Update not available' });
+autoUpdater.on('update-not-available', () => {
+  console.log('Update not available.');
 });
 autoUpdater.on('error', (err) => {
   console.log(`Error in auto-updater. ${err}`);
