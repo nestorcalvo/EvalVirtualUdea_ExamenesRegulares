@@ -435,44 +435,6 @@ const createWindow = async () => {
 // autoUpdater.on('checking-for-update', () => {
 //   console.log('Checking for update...');
 // });
-autoUpdater.on('update-available', (info) => {
-  console.log('Update available.', info);
-  dialog
-    .showMessageBox(mainWindow!, {
-      type: 'info',
-      title: 'Found Updates',
-      message: 'Found updates, do you want update now?',
-      buttons: ['Sure', 'No'],
-    })
-    .then((buttonIndex) => {
-      if (buttonIndex.response === 0) {
-        autoUpdater.downloadUpdate();
-      } else {
-        mainWindow?.close();
-      }
-      console.log(buttonIndex);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
-autoUpdater.on('update-not-available', () => {
-  console.log('Update not available.');
-});
-autoUpdater.on('error', (err) => {
-  console.log(`Error in auto-updater. ${err}`);
-});
-autoUpdater.on('download-progress', (progressObj) => {
-  let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
-  logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
-  logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
-  dialog.showMessageBox(mainWindow!, { message: logMessage });
-  console.log(logMessage);
-});
-autoUpdater.on('update-downloaded', (info) => {
-  console.log('Update downloaded', info);
-  dialog.showMessageBox(mainWindow!, { message: 'Update downloaded' });
-});
 
 warningFound.on('software', async (args: Array<ProcessType>) => {
   arrayFound = args.map((e) => e.name);
@@ -575,6 +537,50 @@ app
     // autoUpdater.checkForUpdates();
     autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
+    autoUpdater.on('update-available', (info) => {
+      console.log('Update available.', info);
+      mainWindow?.webContents.send('show_notification', 'Update available.');
+      dialog
+        .showMessageBox(mainWindow!, {
+          type: 'info',
+          title: 'Found Updates',
+          message: 'Found updates, do you want update now?',
+          buttons: ['Sure', 'No'],
+        })
+        .then((buttonIndex) => {
+          if (buttonIndex.response === 0) {
+            autoUpdater.downloadUpdate();
+          } else {
+            mainWindow?.close();
+          }
+          console.log(buttonIndex);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    });
+    autoUpdater.on('update-not-available', () => {
+      console.log('Update not available.');
+      mainWindow?.webContents.send(
+        'show_notification',
+        'Update not available.'
+      );
+    });
+    autoUpdater.on('error', (err) => {
+      console.log(`Error in auto-updater. ${err}`);
+    });
+    autoUpdater.on('download-progress', (progressObj) => {
+      let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
+      logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
+      logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
+      mainWindow?.webContents.send('show_notification', logMessage);
+      console.log(logMessage);
+    });
+    autoUpdater.on('update-downloaded', (info) => {
+      console.log('Update downloaded', info);
+      dialog.showMessageBox(mainWindow!, { message: 'Update downloaded' });
+      mainWindow?.webContents.send('show_notification', 'Update downloaded');
+    });
 
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the

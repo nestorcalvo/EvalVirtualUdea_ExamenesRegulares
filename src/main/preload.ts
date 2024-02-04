@@ -13,8 +13,7 @@ export type Channels =
   | 'userLogin'
   | 'start_exam'
   | 'show_notification'
-  | 'check_version'
-  | 'show_notification_2';
+  | 'check_version';
 
 const electronHandler = {
   ipcRenderer: {

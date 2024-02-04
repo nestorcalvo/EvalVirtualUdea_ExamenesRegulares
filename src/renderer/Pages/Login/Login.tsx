@@ -189,7 +189,6 @@ function Login() {
 
 export default Login;
 window.electron.ipcRenderer.on('show_notification', (args) => {
-  console.log('Entrada a toast in login');
   if (typeof args === 'string') {
     toast(args, {
       position: 'bottom-right',
