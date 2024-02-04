@@ -429,22 +429,35 @@ const createWindow = async () => {
   // eslint-disable-next-line
   // new AppUpdater();
 };
-function sendStatusToWindow(content: any) {
-  mainWindow?.webContents.send('show_notification', content);
-}
+// function sendStatusToWindow(content: any) {
+//   mainWindow?.webContents.send('show_notification', content);
+// }
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
-  sendStatusToWindow('Checking for update...');
+  dialog.showMessageBox(mainWindow!, { message: 'Checking for update...' });
 });
 autoUpdater.on('update-available', (info) => {
   console.log('Update available.', info);
-  dialog.showMessageBox(mainWindow!, { message: 'Update available.' });
-  sendStatusToWindow('Update available');
+  dialog
+    .showMessageBox(mainWindow!, {
+      type: 'info',
+      title: 'Found Updates',
+      message: 'Found updates, do you want update now?',
+      buttons: ['Sure', 'No'],
+    })
+    .then((buttonIndex) => {
+      // if (buttonIndex === 0) {
+      //   autoUpdater.downloadUpdate();
+      // }
+      console.log(buttonIndex);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 });
 autoUpdater.on('update-not-available', (info) => {
   console.log('Update not available.', info);
   dialog.showMessageBox(mainWindow!, { message: 'Update not available' });
-  sendStatusToWindow('Update not available');
 });
 autoUpdater.on('error', (err) => {
   console.log(`Error in auto-updater. ${err}`);
@@ -453,13 +466,12 @@ autoUpdater.on('download-progress', (progressObj) => {
   let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
   logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
   logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
+  dialog.showMessageBox(mainWindow!, { message: logMessage });
   console.log(logMessage);
 });
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Update downloaded', info);
-  sendStatusToWindow(
-    'There is a new update that was already downloaded, please close the app to install the updates'
-  );
+  dialog.showMessageBox(mainWindow!, { message: 'Update downloaded' });
 });
 
 warningFound.on('software', async (args: Array<ProcessType>) => {
