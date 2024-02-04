@@ -430,9 +430,7 @@ const createWindow = async () => {
   // new AppUpdater();
 };
 function sendStatusToWindow(content: any) {
-  mainWindow?.on('ready-to-show', () => {
-    mainWindow?.webContents.send('show_notification', content);
-  });
+  mainWindow?.webContents.send('show_notification', content);
 }
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
@@ -445,6 +443,7 @@ autoUpdater.on('update-available', (info) => {
 });
 autoUpdater.on('update-not-available', (info) => {
   console.log('Update not available.', info);
+  dialog.showMessageBox(mainWindow!, { message: 'Update not available' });
   sendStatusToWindow('Update not available');
 });
 autoUpdater.on('error', (err) => {
