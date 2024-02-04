@@ -18,6 +18,7 @@ import {
   ipcMain,
   screen,
   net,
+  dialog,
   desktopCapturer,
 } from 'electron';
 // import { autoUpdater } from 'electron-updater';
@@ -29,6 +30,7 @@ import { autoUpdater } from 'electron-updater';
 import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { electron } from 'process';
 
 const warningFound = new EventEmitter();
 
@@ -434,9 +436,11 @@ function sendStatusToWindow(content: any) {
 }
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...');
+  sendStatusToWindow('Checking for update...');
 });
 autoUpdater.on('update-available', (info) => {
   console.log('Update available.', info);
+  dialog.showMessageBox(mainWindow!, { message: 'Update available.' });
   sendStatusToWindow('Update available');
 });
 autoUpdater.on('update-not-available', (info) => {
@@ -558,8 +562,10 @@ app
     //   console.log(info);
     // });
     // autoUpdater.checkForUpdates();
+    autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
     sendStatusToWindow('Show toast');
+
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
