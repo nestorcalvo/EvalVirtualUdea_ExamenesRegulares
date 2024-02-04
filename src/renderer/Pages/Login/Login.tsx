@@ -11,11 +11,12 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import React, { useState, useRef, useEffect } from 'react';
-import { ToastContainer, toast, Slide } from 'react-toastify';
+import { ToastContainer, toast, Slide, ToastOptions } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import instance from 'renderer/axiosConfig';
 import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Toast } from 'react-toastify/dist/types';
 import Image from '../../../../assets/udea_login_2.jpeg';
 
 const theme = createTheme();
@@ -23,12 +24,13 @@ const theme = createTheme();
 function Login() {
   const userRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLInputElement>(null);
+  const toastId = useRef<Toast>(null);
   const navigate = useNavigate();
   const [user, setUser] = useState('');
   const [pwd, setPwd] = useState('');
   const [wrongMessage, setWrongMessage] = useState('');
-  const [version, setVersion] = useState('');
-  console.log('Creacion de componente');
+  const [version, setVersion] = useState<null | string>(null);
+
   useEffect(() => {
     window.electron.ipcRenderer.on('check_version', (args) => {
       if (typeof args === 'string') {
@@ -36,7 +38,28 @@ function Login() {
       }
     });
   }, []);
-
+  useEffect(() => {
+    window.electron.ipcRenderer.on('show_notification', (args: any) => {
+      if (typeof args.message === 'string') {
+        const options: ToastOptions = {
+          position: 'bottom-right',
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+          progress: undefined,
+          theme: 'light',
+          transition: Slide,
+        };
+        if (args.type === 'info') {
+          toastId.current = toast.info(args.message, options);
+        } else if (args.type === 'error') {
+          toastId.current = toast.error(args.message, options);
+        }
+      }
+    });
+  }, []);
   useEffect(() => {
     if (userRef.current) {
       userRef.current.focus();
@@ -79,20 +102,23 @@ function Login() {
   return (
     <>
       {/* <CheckCohort /> */}
+
       <ThemeProvider theme={theme}>
         <Grid container component="main" sx={{ height: '100%' }}>
-          <ToastContainer
-            position="bottom-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
+          {version && (
+            <ToastContainer
+              position="bottom-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
+          )}
           <CssBaseline />
           <Grid
             item
@@ -188,18 +214,3 @@ function Login() {
 }
 
 export default Login;
-window.electron.ipcRenderer.on('show_notification', (args) => {
-  if (typeof args === 'string') {
-    toast(args, {
-      position: 'bottom-right',
-      autoClose: 5000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: false,
-      progress: undefined,
-      theme: 'light',
-      transition: Slide,
-    });
-  }
-});

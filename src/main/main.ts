@@ -539,7 +539,10 @@ app
     autoUpdater.checkForUpdates();
     autoUpdater.on('update-available', (info) => {
       console.log('Update available.', info);
-      mainWindow?.webContents.send('show_notification', 'Update available.');
+      mainWindow?.webContents.send('show_notification', {
+        type: 'info',
+        message: 'Update available.',
+      });
       dialog
         .showMessageBox(mainWindow!, {
           type: 'info',
@@ -561,24 +564,34 @@ app
     });
     autoUpdater.on('update-not-available', () => {
       console.log('Update not available.');
-      mainWindow?.webContents.send(
-        'show_notification',
-        'Update not available.'
-      );
+      mainWindow?.webContents.send('show_notification', {
+        type: 'info',
+        message: 'Update not available.',
+      });
     });
     autoUpdater.on('error', (err) => {
       console.log(`Error in auto-updater. ${err}`);
+      mainWindow?.webContents.send('show_notification', {
+        type: 'error',
+        message: 'Error in auto-updater.',
+      });
+      mainWindow?.webContents.send('show_notification', {
+        type: 'error',
+        message: err,
+      });
     });
     autoUpdater.on('download-progress', (progressObj) => {
       let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
       logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
       logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
-      mainWindow?.webContents.send('show_notification', logMessage);
       console.log(logMessage);
     });
     autoUpdater.on('update-downloaded', (info) => {
       console.log('Update downloaded', info);
-      dialog.showMessageBox(mainWindow!, { message: 'Update downloaded' });
+      mainWindow?.webContents.send('show_notification', {
+        type: 'info',
+        message: 'Update downloaded',
+      });
       mainWindow?.webContents.send('show_notification', 'Update downloaded');
     });
 
