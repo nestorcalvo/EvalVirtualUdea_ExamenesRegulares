@@ -564,7 +564,6 @@ app
     // autoUpdater.checkForUpdates();
     autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
-    sendStatusToWindow('Show toast');
 
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
