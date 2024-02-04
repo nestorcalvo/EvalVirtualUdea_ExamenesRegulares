@@ -441,6 +441,7 @@ autoUpdater.on('update-available', (info) => {
 });
 autoUpdater.on('update-not-available', (info) => {
   console.log('Update not available.', info);
+  sendStatusToWindow('Update not available');
 });
 autoUpdater.on('error', (err) => {
   console.log(`Error in auto-updater. ${err}`);
