@@ -5,8 +5,8 @@ import AppRoutes from './routes';
 
 export default function App() {
   return (
-    <React.StrictMode>
-      <AppRoutes />
-    </React.StrictMode>
+    // <React.StrictMode>
+    <AppRoutes />
+    // </React.StrictMode>
   );
 }

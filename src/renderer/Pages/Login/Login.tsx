@@ -28,7 +28,7 @@ function Login() {
   const [pwd, setPwd] = useState('');
   const [wrongMessage, setWrongMessage] = useState('');
   const [version, setVersion] = useState('');
-
+  console.log('Creacion de componente');
   useEffect(() => {
     window.electron.ipcRenderer.on('check_version', (args) => {
       if (typeof args === 'string') {
@@ -36,24 +36,6 @@ function Login() {
       }
     });
   }, []);
-
-  useEffect(() => {
-    window.electron.ipcRenderer.on('show_notification', (args) => {
-      if (typeof args === 'string') {
-        toast(args, {
-          position: 'bottom-right',
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: false,
-          progress: undefined,
-          theme: 'light',
-          transition: Slide,
-        });
-      }
-    });
-  });
 
   useEffect(() => {
     if (userRef.current) {
@@ -206,3 +188,19 @@ function Login() {
 }
 
 export default Login;
+window.electron.ipcRenderer.on('show_notification', (args) => {
+  console.log('Entrada a toast in login');
+  if (typeof args === 'string') {
+    toast(args, {
+      position: 'bottom-right',
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: false,
+      progress: undefined,
+      theme: 'light',
+      transition: Slide,
+    });
+  }
+});
