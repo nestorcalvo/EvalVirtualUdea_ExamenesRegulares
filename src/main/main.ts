@@ -432,9 +432,9 @@ const createWindow = async () => {
 // function sendStatusToWindow(content: any) {
 //   mainWindow?.webContents.send('show_notification', content);
 // }
-autoUpdater.on('checking-for-update', () => {
-  console.log('Checking for update...');
-});
+// autoUpdater.on('checking-for-update', () => {
+//   console.log('Checking for update...');
+// });
 autoUpdater.on('update-available', (info) => {
   console.log('Update available.', info);
   dialog
