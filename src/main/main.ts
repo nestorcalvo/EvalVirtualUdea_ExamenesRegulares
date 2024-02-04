@@ -445,9 +445,11 @@ autoUpdater.on('update-available', (info) => {
       buttons: ['Sure', 'No'],
     })
     .then((buttonIndex) => {
-      // if (buttonIndex === 0) {
-      //   autoUpdater.downloadUpdate();
-      // }
+      if (buttonIndex.response === 0) {
+        autoUpdater.downloadUpdate();
+      } else {
+        mainWindow?.close();
+      }
       console.log(buttonIndex);
     })
     .catch((err) => {
