@@ -15,9 +15,7 @@ function WarnPage() {
         setWarning(warn);
       } else if (typeof args === 'number') {
         setWarningType('screen');
-        const warn = `Se han detectado ${args} pantallas.
-        Recuerde que el uso de pantallas externas está prohibido durante el examen y puede ser sancionado.
-        Por favor, desconectar la pantalla adicional para poder continuar con el examen y permitir el cierre de esta ventana.`;
+        const warn = `Se han detectado ${args} pantallas.`;
         setWarning(warn);
       }
     });
@@ -88,7 +86,7 @@ function WarnPage() {
                 variant="h4"
                 style={{ marginBottom: '16px' }}
               >
-                {warning}
+                <strong>{warning}</strong>
               </Typography>
             )}
           </div>
@@ -100,12 +98,6 @@ function WarnPage() {
             Para poder seguir haciendo uso de la aplicación por favor siga las
             siguientes instrucciones:
             {warningType === 'software' && (
-              // <Typography
-              //   component="h1"
-              //   variant="h4"
-              //   style={{ marginBottom: '16px' }}
-              // >
-
               <ol>
                 <li>
                   Permita que el contador llegue a cero. En caso de que sigan
@@ -113,8 +105,14 @@ function WarnPage() {
                   ejecutandose en segundo plano.{' '}
                 </li>
               </ol>
-
-              // </Typography>
+            )}
+            {warningType === 'screen' && (
+              <ol>
+                <li>
+                  Por favor, desconectar la pantalla adicional para poder
+                  continuar con el examen y permitir el cierre de esta ventana.{' '}
+                </li>
+              </ol>
             )}
           </Typography>
           <Typography
