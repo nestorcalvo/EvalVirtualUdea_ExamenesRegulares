@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 function WarnPage() {
   const [warning, setWarning] = useState('');
   const [warningType, setWarningType] = useState('');
-  const [timer, setTimer] = useState(15);
+  const [timer, setTimer] = useState(500);
   const intervalRef: any = useRef();
 
   useEffect(() => {
@@ -27,9 +27,9 @@ function WarnPage() {
     intervalRef.current = setInterval(() => {
       setTimer((t) => t - 1);
       if (warningType === 'software') {
-        if (timer === 10) {
+        if (timer === 100) {
           window.electron.ipcRenderer.sendMessage('screenshot');
-        } else if (timer === 5) {
+        } else if (timer === 50) {
           window.electron.ipcRenderer.sendMessage('close_software');
         }
       }
@@ -46,26 +46,83 @@ function WarnPage() {
 
   return (
     <div>
-      <Container maxWidth="sm" style={{ justifyContent: 'center' }}>
-        <Box display="flex" flexWrap="wrap" justifyContent="center">
-          <Typography component="h1" variant="h4">
-            ALERTA
+      <Container maxWidth="md" style={{ justifyContent: 'center' }}>
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          justifyContent="center"
+          flexDirection="row"
+        >
+          <Typography
+            component="h1"
+            variant="h3"
+            style={{ marginBottom: '16px' }}
+          >
+            <strong>ALERTA</strong>
+          </Typography>
+
+          <Typography
+            component="h1"
+            variant="h4"
+            style={{ marginBottom: '16px' }}
+          >
+            Esta alerta se genera debido a que la aplicación a detectado el uso
+            de software no permitido o pantallas externas. RECUERDE que su uso
+            no está permitido y puede generar sanciones.
           </Typography>
 
           <div>
             {warningType === 'software' && (
-              <Typography component="h1" variant="h5">
+              <Typography
+                component="h1"
+                variant="h4"
+                style={{ marginBottom: '16px' }}
+              >
+                <strong>Software no permitido: </strong>
                 {warning}
               </Typography>
             )}
             {warningType === 'screen' && (
-              <Typography component="h1" variant="h5">
+              <Typography
+                component="h1"
+                variant="h4"
+                style={{ marginBottom: '16px' }}
+              >
                 {warning}
               </Typography>
             )}
           </div>
-          <Typography component="h1" variant="h4">
-            {timer}
+          <Typography
+            component="h1"
+            variant="h4"
+            style={{ marginBottom: '16px' }}
+          >
+            Para poder seguir haciendo uso de la aplicación por favor siga las
+            siguientes instrucciones:
+            {warningType === 'software' && (
+              // <Typography
+              //   component="h1"
+              //   variant="h4"
+              //   style={{ marginBottom: '16px' }}
+              // >
+
+              <ol>
+                <li>
+                  Permita que el contador llegue a cero. En caso de que sigan
+                  generando alertas, cierre la aplicación la cual puede estar
+                  ejecutandose en segundo plano.{' '}
+                </li>
+              </ol>
+
+              // </Typography>
+            )}
+          </Typography>
+          <Typography
+            component="h1"
+            variant="h4"
+            style={{ marginBottom: '16px' }}
+          >
+            Contador: {timer} seg
           </Typography>
         </Box>
       </Container>
