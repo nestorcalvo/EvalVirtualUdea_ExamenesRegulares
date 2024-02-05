@@ -21,7 +21,7 @@ import {
   dialog,
   desktopCapturer,
 } from 'electron';
-// import { autoUpdater } from 'electron-updater';
+
 import log from 'electron-log';
 import { createFileRoute, createURLRoute } from 'electron-router-dom';
 import { EventEmitter } from 'node:events';
@@ -30,24 +30,17 @@ import { autoUpdater } from 'electron-updater';
 import SOFTWARE from '../utils/listSoftwares';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { electron } from 'process';
 
 const warningFound = new EventEmitter();
 
 const psList = require('ps-list');
 const fkill = require('fkill');
 
-// export default class AppUpdater {
-//   constructor() {
-//     console.log('App Updater created');
-//     log.transports.file.level = 'debug';
-//     autoUpdater.logger = log;
-//     autoUpdater.checkForUpdatesAndNotify();
-//   }
-// }
+// Logger
+log.transports.file.level = 'info';
 autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = 'info';
 console.log = log.log;
+
 const BASE_URL_POSTMAN =
   'https://5a667436-590b-4383-a2bb-42a790e2e7df.mock.pstmn.io';
 // const BASE_URL_DEV = 'to be added';
