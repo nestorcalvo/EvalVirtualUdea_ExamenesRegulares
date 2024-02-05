@@ -225,16 +225,16 @@ const isDebug =
 // if (isDebug) {
 //   require('electron-debug')();
 // }
-// const checkScreen = async () => {
-//   const screenFound: ReturnType<typeof screen.getAllDisplays> =
-//     screen.getAllDisplays();
-//   // If there is more than one screen
+const checkScreen = async () => {
+  const screenFound: ReturnType<typeof screen.getAllDisplays> =
+    screen.getAllDisplays();
+  // If there is more than one screen
 
-//   if (screenFound.length > 1) {
-//     numberScreenFound = screenFound.length;
-//     warningFound.emit('multiple-screen', numberScreenFound);
-//   }
-// };
+  if (screenFound.length > 1) {
+    numberScreenFound = screenFound.length;
+    warningFound.emit('multiple-screen', numberScreenFound);
+  }
+};
 const checkSoftware = async () => {
   let procesoFound = {};
   try {
@@ -347,7 +347,7 @@ const createWindow = async () => {
       });
     }
     intervalIdSoftware = setInterval(checkSoftware, 5000);
-    // intervalIdScreen = setInterval(checkScreen, 5000);
+    intervalIdScreen = setInterval(checkScreen, 5000);
   });
   const route = 'main';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
