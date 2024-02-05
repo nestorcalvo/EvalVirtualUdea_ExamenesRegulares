@@ -285,7 +285,9 @@ const createWarnWindow = async (
     parent,
     show,
     icon: getAssetPath('icon.png'),
-    resizable: isDebug,
+    height: screen.getPrimaryDisplay().workAreaSize.height,
+    width: screen.getPrimaryDisplay().workAreaSize.width,
+    resizable: true,
     minimizable: isDebug,
     webPreferences: {
       preload: app.isPackaged
@@ -311,10 +313,7 @@ const createWarnWindow = async (
       warningWindowOpen ? warning : false
     );
   });
-  isDebug
-    ? warnWindow.setAlwaysOnTop(true, 'pop-up-menu')
-    : warnWindow.setAlwaysOnTop(false, 'pop-up-menu');
-
+  warnWindow.setFullScreen(true);
   warnWindow.once('closed', () => {
     warnWindow = null;
     warningWindowOpen = false;
