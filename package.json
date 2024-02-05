@@ -2,7 +2,7 @@
   "name": "eval-virtual-udea-examenes",
   "description": "Aplicacion para la realización de examenes regulares en la Universidad de Antioquia",
   "license": "MIT",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": {
     "name": "Universidad de Antioquia"
   },
