@@ -1,14 +1,6 @@
 /* eslint-disable no-unused-expressions */
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import os from 'os';
 import path from 'path';
 import {
@@ -64,6 +56,7 @@ let pidFound: Array<number> | null | undefined;
 let userToken: string | null = null;
 let intervalIdScreen: ReturnType<typeof setInterval>;
 let intervalIdSoftware: ReturnType<typeof setInterval>;
+let intervalIdUpdates: ReturnType<typeof setInterval>;
 
 const getDeviceInfo = () => {
   const deviceInfo = {
@@ -348,6 +341,7 @@ const createWindow = async () => {
     }
     intervalIdSoftware = setInterval(checkSoftware, 5000);
     intervalIdScreen = setInterval(checkScreen, 5000);
+    intervalIdUpdates = setInterval(autoUpdater.checkForUpdates, 900000);
   });
   const route = 'main';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
@@ -359,7 +353,6 @@ const createWindow = async () => {
   process.env.NODE_ENV === 'development'
     ? mainWindow.loadURL(devServerURL)
     : mainWindow.loadFile(...fileRoute);
-  // createWarnWindow(mainWindow, false);
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -507,15 +500,12 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   clearInterval(intervalIdScreen);
   clearInterval(intervalIdSoftware);
+  clearInterval(intervalIdUpdates);
 });
 app
   .whenReady()
   .then(() => {
     createWindow();
-    // autoUpdater.on('update-available', (info) => {
-    //   console.log(info);
-    // });
-    // autoUpdater.checkForUpdates();
     autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates();
     autoUpdater.on('update-available', (info) => {
@@ -537,10 +527,9 @@ app
           } else {
             mainWindow?.close();
           }
-          console.log(buttonIndex);
         })
         .catch((err) => {
-          console.log(err);
+          console.error(err);
         });
     });
     autoUpdater.on('update-not-available', () => {
@@ -551,7 +540,7 @@ app
       });
     });
     autoUpdater.on('error', (err) => {
-      console.log(`Error in auto-updater. ${err}`);
+      console.error(`Error in auto-updater. ${err}`);
       mainWindow?.webContents.send('show_notification', {
         type: 'error',
         message: 'Error in auto-updater.',
