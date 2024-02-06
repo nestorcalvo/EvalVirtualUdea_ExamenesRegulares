@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 function WarnPage() {
   const [warning, setWarning] = useState('');
   const [warningType, setWarningType] = useState('');
-  const [timer, setTimer] = useState(500);
+  const [timer, setTimer] = useState(30);
   const intervalRef: any = useRef();
 
   useEffect(() => {
@@ -25,9 +25,9 @@ function WarnPage() {
     intervalRef.current = setInterval(() => {
       setTimer((t) => t - 1);
       if (warningType === 'software') {
-        if (timer === 100) {
+        if (timer === 10) {
           window.electron.ipcRenderer.sendMessage('screenshot');
-        } else if (timer === 50) {
+        } else if (timer === 5) {
           window.electron.ipcRenderer.sendMessage('close_software');
         }
       }
