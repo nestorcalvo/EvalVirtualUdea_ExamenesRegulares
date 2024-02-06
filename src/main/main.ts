@@ -566,7 +566,6 @@ app
         type: 'info',
         message: 'Update downloaded',
       });
-      mainWindow?.webContents.send('show_notification', 'Update downloaded');
     });
 
     app.on('activate', () => {
