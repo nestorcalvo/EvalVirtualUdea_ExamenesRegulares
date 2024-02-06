@@ -246,7 +246,10 @@ const checkSoftware = async () => {
   }
   return procesoFound;
 };
-
+const checkUpdates = async () => {
+  const resultUpdate = await autoUpdater.checkForUpdates();
+  return resultUpdate;
+};
 const createWarnWindow = async (
   parent: BrowserWindow,
   show: boolean,
@@ -340,8 +343,9 @@ const createWindow = async () => {
       });
     }
     intervalIdSoftware = setInterval(checkSoftware, 5000);
-    intervalIdScreen = setInterval(checkScreen, 5000);
-    intervalIdUpdates = setInterval(autoUpdater.checkForUpdates, 900000);
+    // intervalIdScreen = setInterval(checkScreen, 5000);
+
+    intervalIdUpdates = setInterval(checkUpdates, 9000);
   });
   const route = 'main';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
