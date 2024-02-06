@@ -50,6 +50,7 @@ interface ProcessType {
 let mainWindow: BrowserWindow | null = null;
 let warnWindow: BrowserWindow | null = null;
 let warningWindowOpen: boolean = false;
+let currentlyUpdating: boolean = false;
 let arrayFound: Array<string> | null | undefined;
 let numberScreenFound: number | null | undefined;
 let pidFound: Array<number> | null | undefined;
@@ -344,8 +345,9 @@ const createWindow = async () => {
     }
     intervalIdSoftware = setInterval(checkSoftware, 5000);
     // intervalIdScreen = setInterval(checkScreen, 5000);
-
-    intervalIdUpdates = setInterval(checkUpdates, 9000);
+    if (!currentlyUpdating) {
+      intervalIdUpdates = setInterval(checkUpdates, 9000);
+    }
   });
   const route = 'main';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
@@ -514,6 +516,7 @@ app
     autoUpdater.checkForUpdates();
     autoUpdater.on('update-available', (info) => {
       console.log('Update available.', info);
+      currentlyUpdating = true;
       mainWindow?.webContents.send('show_notification', {
         type: 'info',
         message: 'Update available.',
@@ -537,11 +540,7 @@ app
         });
     });
     autoUpdater.on('update-not-available', () => {
-      console.log('Update not available.');
-      mainWindow?.webContents.send('show_notification', {
-        type: 'info',
-        message: 'Update not available.',
-      });
+      console.log('Update checked and not available.');
     });
     autoUpdater.on('error', (err) => {
       console.error(`Error in auto-updater. ${err}`);
