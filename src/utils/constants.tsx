@@ -3,4 +3,4 @@ export const BASE_URL_POSTMAN =
 export const BASE_URL_DEV = 'to be added';
 export const BASE_URL = 'to be added';
 export const TOKEN = '125413';
-export const URL_EXAM = 'https://udearroba.udea.edu.co/home/';
+export const URL_EXAM = 'https://udearroba.udea.edu.co/internos/my/';
