@@ -2,11 +2,10 @@ import { Container, Typography, Box } from '@mui/material';
 import React, { useState, useEffect, useRef } from 'react';
 
 function WarnPage() {
-  const [warning, setWarning] = useState('');
-  const [warningType, setWarningType] = useState('');
+  const [warning, setWarning] = useState('Se ha detectado una alerta');
+  const [warningType, setWarningType] = useState('unknown');
   const [timer, setTimer] = useState(30);
   const intervalRef: any = useRef();
-
   useEffect(() => {
     window.electron.ipcRenderer.once('open_window', (args) => {
       if (Array.isArray(args)) {
@@ -89,6 +88,15 @@ function WarnPage() {
                 <strong>{warning}</strong>
               </Typography>
             )}
+            {warningType === 'unknown' && (
+              <Typography
+                component="h1"
+                variant="h4"
+                style={{ marginBottom: '16px' }}
+              >
+                <strong>{warning}</strong>
+              </Typography>
+            )}
           </div>
           <Typography
             component="h1"
@@ -111,6 +119,14 @@ function WarnPage() {
                 <li>
                   Por favor, desconectar la pantalla adicional para poder
                   continuar con el examen y permitir el cierre de esta ventana.{' '}
+                </li>
+              </ol>
+            )}
+            {warningType === 'unknown' && (
+              <ol>
+                <li>
+                  Cierra esta ventana para que pueda mostrar la alerta que se
+                  generó.{' '}
                 </li>
               </ol>
             )}
