@@ -235,12 +235,20 @@ const checkSoftware = async () => {
     const currentProcesses: Array<ProcessType> = await psList();
     const softwareLower = SOFTWARE.map((e) => e.toLowerCase());
     procesoFound = currentProcesses.filter((processObject) => {
+      if (processObject.name.toLowerCase().includes('.exe')) {
+        processObject.name = processObject.name
+          .toLowerCase()
+          .replace('.exe', '');
+      }
       if (softwareLower.includes(processObject.name.toLowerCase())) {
         return processObject;
       }
       return false;
     });
-    warningFound.emit('software', procesoFound);
+    console.log(currentProcesses);
+    if (procesoFound) {
+      warningFound.emit('software', procesoFound);
+    }
   } catch (error) {
     console.error('Error getting processes:', error);
     return { err: error };
@@ -345,7 +353,7 @@ const createWindow = async () => {
     }
     intervalIdSoftware = setInterval(checkSoftware, 5000);
     // intervalIdScreen = setInterval(checkScreen, 5000);
-    if (!currentlyUpdating) {
+    if (!currentlyUpdating || !isDebug) {
       intervalIdUpdates = setInterval(checkUpdates, 9000);
     }
   });
