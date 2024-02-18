@@ -1,6 +1,6 @@
 const SOFTWARE = [
   // 'AnyDesk', Anydesk removed in linux until fkill kills all children process
-  'Brave',
+  // 'Brave',
   // 'Whatsapp' Buscar bien como es el proceso
   'TeamViewer',
   'mstsc',
