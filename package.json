@@ -2,7 +2,7 @@
   "name": "eval-virtual-udea-examenes",
   "description": "Aplicacion para la realización de examenes regulares en la Universidad de Antioquia",
   "license": "MIT",
-  "version": "0.0.10",
+  "version": "0.0.15",
   "author": {
     "name": "Universidad de Antioquia"
   },
@@ -70,10 +70,12 @@
     }
   },
   "dependencies": {
+    "@667/ps-list": "^1.1.3",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.9",
     "@mui/material": "^5.14.9",
+    "@nestorcalvo/ps-list": "^1.1.2",
     "axios": "^1.6.2",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
@@ -159,7 +161,9 @@
     "productName": "EvalVirtualUdeaExamenes",
     "appId": "org.erb.EvalVirtualUdeaExamenes",
     "asar": true,
-    "asarUnpack": "**\\*.{node,dll}",
+    "asarUnpack": [
+      "**\\*.{node,dll}"
+    ],
     "files": [
       "dist",
       "node_modules",
@@ -198,14 +202,19 @@
       "target": [
         "nsis"
       ],
-      "publish": ["github"]
+      "publish": [
+        "github"
+      ],
+      "requestedExecutionLevel": "highestAvailable"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
       "category": "Development",
-      "publish": ["github"]
+      "publish": [
+        "github"
+      ]
     },
     "directories": {
       "app": "release/app",
@@ -213,7 +222,11 @@
       "output": "release/build"
     },
     "extraResources": [
-      "./assets/**"
+      "./assets/**",
+      {
+        "from": "./node_modules/@nestorcalvo/ps-list/fastlist.exe",
+        "to": "./fastlist.exe"
+      }
     ],
     "publish": {
       "provider": "github",

@@ -25,7 +25,8 @@ import { resolveHtmlPath } from './util';
 
 const warningFound = new EventEmitter();
 
-const psList = require('ps-list');
+// const psList = require('ps-list');
+const psList = require('@nestorcalvo/ps-list');
 const fkill = require('fkill');
 
 // Logger
@@ -232,9 +233,14 @@ const checkScreen = async () => {
 const checkSoftware = async () => {
   let procesoFound = {};
   try {
-    const currentProcesses: Array<ProcessType> = await psList();
+    const binPath =
+      process.env.NODE_ENV === 'development'
+        ? undefined
+        : path.join(process.resourcesPath, 'fastlist.exe');
+    console.log(await psList({ path: binPath }));
+    const currentProcesses: any = await psList({ path: binPath });
     const softwareLower = SOFTWARE.map((e) => e.toLowerCase());
-    procesoFound = currentProcesses.filter((processObject) => {
+    procesoFound = currentProcesses.filter((processObject: any) => {
       if (processObject.name.toLowerCase().includes('.exe')) {
         processObject.name = processObject.name
           .toLowerCase()
@@ -245,7 +251,6 @@ const checkSoftware = async () => {
       }
       return false;
     });
-    console.log(currentProcesses);
     if (procesoFound) {
       warningFound.emit('software', procesoFound);
     }
@@ -264,10 +269,6 @@ const createWarnWindow = async (
   show: boolean,
   warning: number | Array<string> | boolean
 ) => {
-  // if (isDebug) {
-  //   await installExtensions();
-  // }
-
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
@@ -281,7 +282,7 @@ const createWarnWindow = async (
     icon: getAssetPath('icon.png'),
     height: screen.getPrimaryDisplay().workAreaSize.height,
     width: screen.getPrimaryDisplay().workAreaSize.width,
-    resizable: true,
+    resizable: isDebug,
     minimizable: isDebug,
     webPreferences: {
       preload: app.isPackaged
@@ -290,7 +291,7 @@ const createWarnWindow = async (
     },
   });
   warnWindow.setContentProtection(!isDebug);
-  warnWindow.setAlwaysOnTop(isDebug, 'pop-up-menu');
+  warnWindow.setAlwaysOnTop(!isDebug, 'pop-up-menu');
   const route = 'warning';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
 
@@ -345,15 +346,15 @@ const createWindow = async () => {
   mainWindow.setAlwaysOnTop(!isDebug, 'screen-saver');
   mainWindow.setFullScreen(!isDebug);
   mainWindow.webContents.on('did-frame-finish-load', () => {
+    mainWindow!.webContents.openDevTools();
     if (isDebug) {
-      mainWindow!.webContents.openDevTools();
       mainWindow!.webContents.on('devtools-opened', () => {
         mainWindow!.focus();
       });
     }
     intervalIdSoftware = setInterval(checkSoftware, 5000);
-    // intervalIdScreen = setInterval(checkScreen, 5000);
-    if (!currentlyUpdating || !isDebug) {
+    intervalIdScreen = setInterval(checkScreen, 5000);
+    if (!currentlyUpdating && !isDebug) {
       intervalIdUpdates = setInterval(checkUpdates, 9000);
     }
   });
