@@ -237,7 +237,6 @@ const checkSoftware = async () => {
       process.env.NODE_ENV === 'development'
         ? undefined
         : path.join(process.resourcesPath, 'fastlist.exe');
-    console.log(await psList({ path: binPath }));
     const currentProcesses: any = await psList({ path: binPath });
     const softwareLower = SOFTWARE.map((e) => e.toLowerCase());
     procesoFound = currentProcesses.filter((processObject: any) => {
@@ -276,20 +275,39 @@ const createWarnWindow = async (
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
   };
-  warnWindow = new BrowserWindow({
-    parent,
-    show,
-    icon: getAssetPath('icon.png'),
-    height: screen.getPrimaryDisplay().workAreaSize.height,
-    width: screen.getPrimaryDisplay().workAreaSize.width,
-    resizable: isDebug,
-    minimizable: isDebug,
-    webPreferences: {
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
-    },
-  });
+  let optionsWarnWindow = {};
+  if (process.platform === 'linux') {
+    optionsWarnWindow = {
+      parent,
+      show,
+      icon: getAssetPath('icon.png'),
+      height: screen.getPrimaryDisplay().workAreaSize.height,
+      width: screen.getPrimaryDisplay().workAreaSize.width,
+      resizable: isDebug,
+      minimizable: isDebug,
+      webPreferences: {
+        preload: app.isPackaged
+          ? path.join(__dirname, 'preload.js')
+          : path.join(__dirname, '../../.erb/dll/preload.js'),
+      },
+    };
+  } else {
+    optionsWarnWindow = {
+      parent,
+      show,
+      icon: getAssetPath('icon.png'),
+      height: screen.getPrimaryDisplay().workAreaSize.height,
+      width: screen.getPrimaryDisplay().workAreaSize.width,
+      resizable: isDebug,
+      minimizable: isDebug,
+      webPreferences: {
+        preload: app.isPackaged
+          ? path.join(__dirname, 'preload.js')
+          : path.join(__dirname, '../../.erb/dll/preload.js'),
+      },
+    };
+  }
+  warnWindow = new BrowserWindow(optionsWarnWindow);
   warnWindow.setContentProtection(false);
   warnWindow.setAlwaysOnTop(!isDebug, 'pop-up-menu');
   const route = 'warning';
@@ -327,27 +345,46 @@ const createWindow = async () => {
   const getAssetPath = (...paths: string[]): string => {
     return path.join(RESOURCES_PATH, ...paths);
   };
+  // One option for Linux
+  let options = {};
+  if (process.platform === 'linux') {
+    options = {
+      show: false,
+      width: isDebug ? 1024 : screen.getPrimaryDisplay().workAreaSize.width,
+      height: isDebug ? 728 : screen.getPrimaryDisplay().workAreaSize.height,
+      resizable: isDebug,
+      minimizable: isDebug,
 
-  mainWindow = new BrowserWindow({
-    show: false,
-    width: isDebug ? 1024 : screen.getPrimaryDisplay().workAreaSize.width,
-    height: isDebug ? 728 : screen.getPrimaryDisplay().workAreaSize.height,
-    resizable: isDebug,
-    minimizable: isDebug,
-
-    icon: getAssetPath('icon.png'),
-    webPreferences: {
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
-    },
-  });
+      icon: getAssetPath('icon.png'),
+      webPreferences: {
+        preload: app.isPackaged
+          ? path.join(__dirname, 'preload.js')
+          : path.join(__dirname, '../../.erb/dll/preload.js'),
+      },
+    };
+  } else {
+    options = {
+      show: false,
+      width: isDebug ? 1024 : screen.getPrimaryDisplay().workAreaSize.width,
+      height: isDebug ? 728 : screen.getPrimaryDisplay().workAreaSize.height,
+      resizable: isDebug,
+      minimizable: isDebug,
+      icon: getAssetPath('icon.png'),
+      webPreferences: {
+        preload: app.isPackaged
+          ? path.join(__dirname, 'preload.js')
+          : path.join(__dirname, '../../.erb/dll/preload.js'),
+      },
+    };
+  }
+  mainWindow = new BrowserWindow(options);
   mainWindow.setContentProtection(false);
-  mainWindow.setAlwaysOnTop(!isDebug, 'screen-saver');
+  mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  mainWindow.setVisibleOnAllWorkspaces(true);
   mainWindow.setFullScreen(!isDebug);
   mainWindow.webContents.on('did-frame-finish-load', () => {
-    mainWindow!.webContents.openDevTools();
     if (isDebug) {
+      mainWindow!.webContents.openDevTools();
       mainWindow!.webContents.on('devtools-opened', () => {
         mainWindow!.focus();
       });
@@ -368,6 +405,13 @@ const createWindow = async () => {
   process.env.NODE_ENV === 'development'
     ? mainWindow.loadURL(devServerURL)
     : mainWindow.loadFile(...fileRoute);
+  // One option for Linux
+  mainWindow.on('minimize', () => {
+    mainWindow?.maximize();
+  });
+  mainWindow.on('blur', () => {
+    mainWindow?.focus();
+  });
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -378,6 +422,8 @@ const createWindow = async () => {
       mainWindow.minimize();
     } else {
       mainWindow.show();
+      mainWindow.focus();
+      mainWindow.setAlwaysOnTop(true);
       mainWindow?.webContents.send('check_version', app.getVersion());
     }
   });
