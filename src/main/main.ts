@@ -189,7 +189,7 @@ ipcMain.on('userLogin', async (_event, arg) => {
     remoteControl: false,
     externalDevices: false,
     externalScreen: false,
-    description: 'Registro informacion PC',
+    description: `Registro informacion PC con version de Eval v${app.getVersion()}`,
     information: Buffer.from(JSON.stringify(deviceInfo)).toString('base64'),
   };
   const request = await sendInformation(body, true);
@@ -290,7 +290,7 @@ const createWarnWindow = async (
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
-  warnWindow.setContentProtection(!isDebug);
+  warnWindow.setContentProtection(false);
   warnWindow.setAlwaysOnTop(!isDebug, 'pop-up-menu');
   const route = 'warning';
   const devServerURL = createURLRoute(resolveHtmlPath('index.html'), route);
@@ -342,7 +342,7 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
-  mainWindow.setContentProtection(!isDebug);
+  mainWindow.setContentProtection(false);
   mainWindow.setAlwaysOnTop(!isDebug, 'screen-saver');
   mainWindow.setFullScreen(!isDebug);
   mainWindow.webContents.on('did-frame-finish-load', () => {
