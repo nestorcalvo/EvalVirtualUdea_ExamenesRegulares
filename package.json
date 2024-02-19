@@ -205,7 +205,13 @@
       "publish": [
         "github"
       ],
-      "requestedExecutionLevel": "highestAvailable"
+      "requestedExecutionLevel": "highestAvailable",
+      "extraResources":[
+        {
+          "from": "./node_modules/@nestorcalvo/ps-list/fastlist.exe",
+          "to": "./fastlist.exe"
+        }
+      ]
     },
     "linux": {
       "target": [
@@ -222,11 +228,7 @@
       "output": "release/build"
     },
     "extraResources": [
-      "./assets/**",
-      {
-        "from": "./node_modules/@nestorcalvo/ps-list/fastlist.exe",
-        "to": "./fastlist.exe"
-      }
+      "./assets/**"
     ],
     "publish": {
       "provider": "github",
